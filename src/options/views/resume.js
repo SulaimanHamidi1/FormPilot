@@ -33,7 +33,7 @@
   }
 
   // Drop zone + file picker. Calls onParsed(parsed) after saving the file.
-  function uploader(onParsed) {
+  function uploader(onParsed, { doneText = 'Done. Review what we found below.' } = {}) {
     const status = h('p.muted', { 'aria-live': 'polite' });
     const input = h('input', { type: 'file', accept: '.pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain', hidden: true });
     const handle = async (file) => {
@@ -47,7 +47,7 @@
         const text = await JF.resumeExtract.extractText(file);
         await JF.storage.saveResume(file, text);
         const parsed = JF.resumeParse.parseText(text);
-        status.textContent = text.trim() ? 'Done. Review what we found below.' : 'Saved, but no text could be read (scanned PDF?). Fill your profile manually.';
+        status.textContent = text.trim() ? doneText : 'Saved, but no text could be read (scanned PDF?). Fill your profile manually.';
         onParsed(parsed, true);
       } catch (e) {
         status.textContent = 'Could not read that file: ' + e.message;

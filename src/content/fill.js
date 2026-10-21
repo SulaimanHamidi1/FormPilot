@@ -37,9 +37,18 @@
     fire(el, 'focusout');
   }
 
+  // A full pointer sequence with coordinates and a focus between down and up,
+  // like a real click. Widgets such as react-select ignore anything less.
   function clickEl(el) {
-    for (const t of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) fire(el, t, { button: 0 });
-    el.click();
+    const r = el.getBoundingClientRect();
+    const at = { button: 0, view: window, clientX: r.left + Math.min(8, r.width / 2), clientY: r.top + r.height / 2 };
+    const ptr = { ...at, pointerType: 'mouse', isPrimary: true, pointerId: 1 };
+    fire(el, 'pointerdown', { ...ptr, buttons: 1 });
+    fire(el, 'mousedown', { ...at, buttons: 1 });
+    if (el.focus) el.focus({ preventScroll: true });
+    fire(el, 'pointerup', ptr);
+    fire(el, 'mouseup', at);
+    fire(el, 'click', at);
   }
 
   // ---- Highlighting ----
@@ -95,6 +104,11 @@
   function formatValue(value, field) {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     let v = String(value);
+    if (field.datePart) {
+      const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(v);
+      if (!m) return '';
+      return field.datePart === 'year' ? m[1] : field.datePart === 'month' ? m[2] : m[3] || '01';
+    }
     const el = field.el;
     const type = (el.getAttribute('type') || '').toLowerCase();
     if (field.kind === 'date' || field.kind === 'month' || /date|month|year|from|to\b|start|end|graduat/i.test(field.label + ' ' + field.placeholder)) {
@@ -141,6 +155,27 @@
       fire(opt.el, 'change');
     }
     return true;
+  }
+
+  function fillButtonGroup(field, value) {
+    const opt = JF.match.pickOption(field.options, value);
+    if (!opt) return false;
+    if (opt.el.getAttribute('aria-pressed') !== 'true') clickEl(opt.el);
+    return true;
+  }
+
+  // Location/city inputs often show suggestions that must be picked for the
+  // value to stick (Lever, Google Places). Pick the best one if any appear.
+  async function pickSuggestion(field, value) {
+    await sleep(450);
+    const opts = visibleOptions(field.el);
+    for (const el of document.querySelectorAll('.dropdown-results .dropdown-location, .pac-container .pac-item')) {
+      if (JF.detect.isVisible(el)) opts.push({ text: JF.detect.textOf(el), value: '', el });
+    }
+    if (!opts.length) return;
+    const opt = JF.match.pickOption(opts, value) || opts[0];
+    clickEl(opt.el);
+    await sleep(50);
   }
 
   function fillCheckbox(field, value) {
@@ -207,7 +242,7 @@
       const list = (root.getElementById ? root.getElementById(id) : null) || document.getElementById(id);
       if (list) opts.push(...list.querySelectorAll('[role=option]'));
     }
-    if (!opts.length) opts = [...document.querySelectorAll('[role=option]')];
+    if (!opts.length) opts = [...document.querySelectorAll('[role=option], [data-automation-id=promptOption]')];
     return opts
       .filter((o) => JF.detect.isVisible(o) && o.getAttribute('aria-disabled') !== 'true')
       .map((o) => ({ text: JF.detect.textOf(o) || o.getAttribute('aria-label') || '', value: o.getAttribute('data-value') || '', el: o }));
@@ -249,6 +284,11 @@
       setValue(el, query);
       el.focus({ preventScroll: true });
       opts = await waitForOptions(el, 1200);
+      // Workday's search prompts only search on Enter.
+      if (!opts.length && el.getAttribute('data-automation-id') === 'searchBox') {
+        fire(el, 'keydown', { key: 'Enter', code: 'Enter', keyCode: 13 });
+        opts = await waitForOptions(el, 1500);
+      }
       opt = JF.match.pickOption(opts, value);
     }
     if (opt) {
@@ -288,6 +328,7 @@
   function hasValue(field) {
     const el = field.el;
     if (field.kind === 'radio' || field.kind === 'checkboxGroup') return field.options.some((o) => o.el.checked);
+    if (field.kind === 'buttonGroup') return field.options.some((o) => o.el.getAttribute('aria-pressed') === 'true');
     if (field.kind === 'checkbox') return false;
     if (field.kind === 'file') return !!(el.files && el.files.length);
     if (field.kind === 'select') return el.selectedIndex > 0 && el.value !== '';
@@ -314,6 +355,10 @@
         case 'date':
         case 'month':
           ok = fillText(field, value);
+          if (ok && field.kind === 'text' && (key === 'personal.location' || key === 'personal.city')) await pickSuggestion(field, value);
+          break;
+        case 'buttonGroup':
+          ok = fillButtonGroup(field, value);
           break;
         case 'select':
           ok = fillSelect(field, value);
@@ -343,7 +388,8 @@
     }
     if (ok) {
       field.el.setAttribute(FILLED_ATTR, '1');
-      if (ctx.settings.highlight) highlight(field.kind === 'radio' || field.kind === 'checkboxGroup' ? field.options[0].el.closest('fieldset, [role=radiogroup], div') || field.el : field.el, OK_COLOR);
+      const grouped = field.kind === 'radio' || field.kind === 'checkboxGroup';
+      if (ctx.settings.highlight) highlight(grouped ? field.options[0].el.closest('fieldset, [role=radiogroup], div') || field.el : field.el, OK_COLOR);
     }
     return ok ? 'filled' : 'failed';
   }

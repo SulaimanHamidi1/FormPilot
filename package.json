@@ -4,7 +4,7 @@
   "private": true,
   "description": "Chrome extension (MV3) that auto-fills job applications from a locally stored profile.",
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test \"test/*.test.js\"",
     "icons": "node tools/make-icons.js"
   },
   "license": "MIT"

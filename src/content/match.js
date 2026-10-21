@@ -41,17 +41,32 @@
     return 0;
   }
 
+  // A yes/no question ("Are you subject to ... with your current employer?")
+  // only maps to keys that hold yes/no style answers.
+  const YESNO_Q = /^(are|do|does|have|has|will|would|is|can|could|did|were|was|should)\b/;
+  const YESNO_KEYS = new Set([
+    'authorization.authorizedToWork', 'authorization.requireSponsorship', 'authorization.over18', 'authorization.securityClearance',
+    'authorization.workAuthStatus', 'preferences.willingToRelocate', 'preferences.previouslyEmployed', 'preferences.remotePreference', 'work.current',
+  ]);
+  // Free-text boxes only take long-form answers.
+  const TEXTAREA_KEYS = new Set(['summary', 'coverLetter', 'skills', 'work.description', 'personal.address1']);
+
   // Normalised text signals for a field, strongest first.
   function signals(field) {
+    const label = normalize(field.label);
+    const nearby = normalize(field.nearby);
     return {
-      label: normalize(field.label),
-      nearby: normalize(field.nearby),
+      label,
+      nearby,
       placeholder: normalize(field.placeholder),
       attrs: normalizeAttr(field.attrs),
+      yesNo: YESNO_Q.test(label || nearby) && /\?\s*\W*$/.test(field.label || field.nearby || ''),
     };
   }
 
   function ruleScore(rule, sig, field) {
+    if (field.kind === 'textarea' && !TEXTAREA_KEYS.has(rule.key)) return 0;
+    if (sig.yesNo && !YESNO_KEYS.has(rule.key) && !rule.key.startsWith('eeo.')) return 0;
     if (rule.kinds && !rule.kinds.includes(field.kind === 'checkboxGroup' ? 'checkbox' : field.kind)) return 0;
     if (!rule.kinds && field.kind === 'file') return 0;
     const listName = rule.key.split('.')[0];
@@ -216,6 +231,9 @@
     }
     const up = String(value).trim().toUpperCase();
     if (US_STATES[up]) out.add(normalize(US_STATES[up]));
+    // "San Francisco, CA" -> "san francisco california"
+    const loc = String(value).match(/^(.+),\s*([A-Z]{2})$/);
+    if (loc && US_STATES[loc[2]]) out.add(normalize(loc[1] + ' ' + US_STATES[loc[2]]));
     for (const [abbr, name] of Object.entries(US_STATES)) if (normalize(name) === v) out.add(abbr.toLowerCase());
     return [...out];
   }

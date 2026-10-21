@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Generic application form</title></head>
+<body>
+<h1>Apply: Software Engineer</h1>
+<form id="app">
+  <div><label for="fn">First Name *</label><input id="fn" name="first_name" required></div>
+  <div><label for="ln">Last Name *</label><input id="ln" name="last_name" required></div>
+  <label>Email address <input type="email" name="email"></label>
+  <div><input aria-label="Phone number" name="phone" type="tel"></div>
+  <div class="q"><div class="q-label">Where are you located?</div><div><input name="loc" type="text"></div></div>
+  <input placeholder="LinkedIn profile URL" name="urls[LinkedIn]">
+  <input placeholder="GitHub" name="urls[GitHub]">
+  <input placeholder="Portfolio / Website" name="urls[Portfolio]">
+  <div><label for="org">Current company</label><input id="org" name="org"></div>
+  <div><label for="ttl">Current job title</label><input id="ttl" name="title"></div>
+  <div><label for="cntry">Country</label>
+    <select id="cntry" name="country"><option value="">Select…</option><option>Canada</option><option value="US">United States of America</option><option>United Kingdom</option></select>
+  </div>
+  <div><label for="st">State</label>
+    <select id="st" name="state"><option value="">Select…</option><option>Alabama</option><option>California</option><option>New York</option></select>
+  </div>
+  <fieldset>
+    <legend>Are you legally authorized to work in the United States?</legend>
+    <label><input type="radio" name="auth" value="1"> Yes</label>
+    <label><input type="radio" name="auth" value="0"> No</label>
+  </fieldset>
+  <div class="question">
+    <p>Will you now or in the future require sponsorship for employment visa status (e.g. H-1B)?</p>
+    <label><input type="radio" name="sponsor" value="y"> Yes, I will require sponsorship</label>
+    <label><input type="radio" name="sponsor" value="n"> No, I will not require sponsorship</label>
+  </div>
+  <div><label for="sal">What are your salary expectations?</label><input id="sal" name="q_salary"></div>
+  <div><label for="start">Earliest start date</label><input id="start" type="date" name="start"></div>
+  <div><label for="hear">How did you hear about this job?</label>
+    <select id="hear" name="source"><option value="">--</option><option>Company website</option><option>LinkedIn</option><option>Referral</option></select>
+  </div>
+  <div><label for="cover">Cover letter</label><textarea id="cover" name="cover_letter"></textarea></div>
+  <div><label for="resume">Resume/CV</label><input id="resume" type="file" name="resume"></div>
+  <div><label for="why">Why do you want to work at Acme?</label><textarea id="why" name="q_why"></textarea></div>
+  <div><label for="fav">What is your favorite data structure?</label><input id="fav" name="q_fav"></div>
+  <h2>Education</h2>
+  <div id="education_0">
+    <label for="edu0">School</label><input id="edu0" name="educations[0][school]">
+    <label for="deg0">Degree</label>
+    <select id="deg0" name="educations[0][degree]"><option value="">--</option><option>High School</option><option>Associate's Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option></select>
+    <label for="dis0">Discipline</label><input id="dis0" name="educations[0][discipline]">
+  </div>
+  <h2>Voluntary Self-Identification</h2>
+  <div><label for="gender">Gender</label>
+    <select id="gender" name="eeo[gender]"><option value="">Please select</option><option>Male</option><option>Female</option><option>Decline to self-identify</option></select>
+  </div>
+  <div><label for="race">Race</label>
+    <select id="race" name="eeo[race]"><option value="">Please select</option><option>Asian</option><option>White</option><option>I don't wish to answer</option></select>
+  </div>
+  <div><label for="vet">Veteran status</label>
+    <select id="vet" name="eeo[veteran]"><option value="">Please select</option><option>I am a protected veteran</option><option>I am not a protected veteran</option><option>I don't wish to answer</option></select>
+  </div>
+  <label><input type="checkbox" name="privacy"> I agree to the privacy policy</label>
+  <div id="shadow-host"></div>
+  <button type="submit">Submit application</button>
+</form>
+<script>
+  // A web component with an open shadow root, like SmartRecruiters' inputs.
+  const host = document.getElementById('shadow-host');
+  if (host && host.attachShadow) {
+    const root = host.attachShadow({ mode: 'open' });
+    root.innerHTML = '<label for="cityx">City</label><input id="cityx" name="city">';
+  }
+</script>
+</body>
+</html>

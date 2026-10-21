@@ -1,0 +1,22 @@
+{
+  "personal": {
+    "firstName": "Jane", "middleName": "A.", "lastName": "Doe", "preferredName": "Janie", "pronouns": "she/her",
+    "email": "jane.doe@example.com", "phone": "(415) 555-0134",
+    "address1": "1 Market St", "address2": "Apt 5", "city": "San Francisco", "state": "CA", "postalCode": "94105", "country": "United States",
+    "linkedin": "https://linkedin.com/in/janedoe", "github": "https://github.com/janedoe", "portfolio": "https://janedoe.dev", "twitter": ""
+  },
+  "work": [
+    { "company": "Stripe", "title": "Senior Software Engineer", "location": "San Francisco, CA", "startDate": "2021-01", "endDate": "", "current": true, "description": "Ledger services." },
+    { "company": "Acme Corp", "title": "Software Engineer", "location": "New York, NY", "startDate": "2017-06", "endDate": "2020-12", "current": false, "description": "Billing APIs." }
+  ],
+  "education": [
+    { "school": "University of California, Berkeley", "degree": "Bachelor's", "field": "Computer Science", "startDate": "2013-08", "endDate": "2017-05", "gpa": "3.8" }
+  ],
+  "skills": ["Go", "Python", "SQL"],
+  "summary": "Backend engineer.",
+  "coverLetter": "Dear hiring team, ...",
+  "authorization": { "authorizedToWork": "Yes", "requireSponsorship": "No", "workAuthStatus": "US Citizen", "over18": "Yes", "securityClearance": "" },
+  "preferences": { "desiredTitle": "Staff Engineer", "willingToRelocate": "No", "remotePreference": "Hybrid", "salaryExpectation": "200000", "salaryCurrency": "USD", "salaryPeriod": "Yearly", "startDate": "2026-12-01", "noticePeriod": "2 weeks", "howDidYouHear": "LinkedIn", "yearsExperience": "9" },
+  "eeo": { "gender": "Female", "transgender": "No", "sexualOrientation": "Prefer not to say", "hispanicLatino": "No", "ethnicity": "Asian", "veteranStatus": "I am not a protected veteran", "disabilityStatus": "Prefer not to say" },
+  "custom": [ { "id": "c1", "question": "Favourite data structure?", "answer": "Hash map", "updatedAt": 1 } ]
+}

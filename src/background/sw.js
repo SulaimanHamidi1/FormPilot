@@ -8,6 +8,8 @@ const CONTENT_FILES = [
   'src/content/synonyms.js',
   'src/content/detect.js',
   'src/content/match.js',
+  'src/content/fill.js',
+  'src/content/ui.js',
   'src/content/main.js',
 ];
 
@@ -26,13 +28,48 @@ async function ensureInjected(tabId) {
   }
 }
 
+// Run the filler in every reachable frame and combine the results.
 async function fillTab(tabId) {
   await ensureInjected(tabId);
   const results = await chrome.scripting.executeScript({
     target: { tabId, allFrames: true },
     func: () => (globalThis.JF && globalThis.JF.run ? globalThis.JF.run() : null),
   });
-  return results.map((r) => r.result).filter(Boolean);
+  const summary = { filled: 0, kept: 0, failed: 0, unknown: [], frames: 0, ms: 0 };
+  for (const r of results) {
+    if (!r.result) continue;
+    summary.frames++;
+    summary.filled += r.result.filled;
+    summary.kept += r.result.kept;
+    summary.failed += r.result.failed;
+    summary.ms = Math.max(summary.ms, r.result.ms);
+    for (const u of r.result.unknown) summary.unknown.push({ ...u, frameId: r.frameId });
+  }
+  await chrome.scripting.executeScript({
+    target: { tabId, frameIds: [0] },
+    func: (s) => globalThis.JF && globalThis.JF.showSummary && globalThis.JF.showSummary(s),
+    args: [summary],
+  }).catch(() => {});
+  return summary;
+}
+
+// Fill answers the user typed into the on-page prompt, frame by frame.
+async function fillAnswers(tabId, answers) {
+  const byFrame = new Map();
+  for (const a of answers) {
+    if (!byFrame.has(a.frameId)) byFrame.set(a.frameId, []);
+    byFrame.get(a.frameId).push({ id: a.id, value: a.value });
+  }
+  let filled = 0;
+  for (const [frameId, list] of byFrame) {
+    const [r] = await chrome.scripting.executeScript({
+      target: { tabId, frameIds: [frameId] },
+      func: (l) => (globalThis.JF && globalThis.JF.fillAnswers ? globalThis.JF.fillAnswers(l) : 0),
+      args: [list],
+    }).catch(() => [{ result: 0 }]);
+    filled += (r && r.result) || 0;
+  }
+  return filled;
 }
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
@@ -42,11 +79,22 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg && msg.type === 'fill') {
+  if (!msg) return false;
+  if (msg.type === 'fill') {
     fillTab(msg.tabId)
-      .then((frames) => sendResponse({ ok: true, frames }))
+      .then((summary) => sendResponse({ ok: true, summary }))
       .catch((e) => sendResponse({ ok: false, error: String(e.message || e) }));
     return true;
+  }
+  if (msg.type === 'fillAnswers' && sender.tab) {
+    fillAnswers(sender.tab.id, msg.answers)
+      .then((filled) => sendResponse({ ok: true, filled }))
+      .catch((e) => sendResponse({ ok: false, error: String(e.message || e) }));
+    return true;
+  }
+  if (msg.type === 'openOptions') {
+    chrome.runtime.openOptionsPage();
+    return false;
   }
   return false;
 });

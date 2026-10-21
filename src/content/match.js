@@ -260,11 +260,30 @@
     return best ? best.option : null;
   }
 
+  // Numeric answers against range options: "3-5 years", "10+", "Less than 1".
+  function pickRange(options, n) {
+    for (const opt of options) {
+      const t = normalize(opt.text).replace(/(\d)\s*k\b/g, '$1000');
+      const nums = (t.match(/\d+(\.\d+)?/g) || []).map(Number);
+      if (!nums.length) continue;
+      let lo = nums[0];
+      let hi = nums.length > 1 ? nums[1] : nums[0];
+      if (/\+|or more|and above|plus|over|more than|at least/.test(opt.text.toLowerCase())) hi = Infinity;
+      if (/less than|under|fewer than|below|up to/.test(t)) [lo, hi] = [0, nums[0] - (/up to/.test(t) ? 0 : 0.001)];
+      if (n >= lo && n <= hi) return opt;
+    }
+    return null;
+  }
+
   // Pick the option that best represents `value`. Options: [{text, value}].
   function pickOption(options, value) {
     if (value == null || value === '' || !options.length) return null;
     const nv = normalize(value);
     if (nv === 'yes' || nv === 'no') return pickYesNo(options, nv === 'yes');
+    if (/^\d+(\.\d+)?$/.test(String(value).trim())) {
+      const r = pickRange(options, Number(value));
+      if (r) return r;
+    }
     const isDecline = DECLINE_RE.test(normalize(value));
     const candidates = isDecline ? [] : aliasesFor(value);
     let best = null;

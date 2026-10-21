@@ -10,6 +10,7 @@
     askUnknown: true,
     overwrite: false,
     ignored: [],
+    watchMultiStep: true,
   };
   const EXPORT_FORMAT = 'job_filler-backup';
   const MAX_RESUME_BYTES = 5 * 1024 * 1024;

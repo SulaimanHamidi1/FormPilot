@@ -24,7 +24,9 @@
     if (f.kind === 'file' && m.key !== 'resume') return false;
     if (f.kind === 'checkbox' && !f.required) return false;
     if (m.key || m.custom) return f.required || status === 'failed';
-    return true;
+    // Unmatched: ask about real questions, not optional one-liners like "Facebook".
+    const hasChoices = ['select', 'radio', 'checkboxGroup', 'buttonGroup', 'combobox', 'listbox'].includes(f.kind);
+    return f.required || hasChoices || f.kind === 'textarea' || /\?\s*$/.test(q) || q.length > 30;
   }
 
   function describe(m, frameKey) {
@@ -72,6 +74,9 @@
       if (!res.filled.length) break;
       await sleep(300);
     }
+    // JF_FORCE_WATCH lets the local test pages exercise this; page scripts
+    // can't reach the content script's isolated world in the extension.
+    if (settings.watchMultiStep && (MULTI_STEP.test(location.hostname) || globalThis.JF_FORCE_WATCH)) watch();
     return {
       url: location.href,
       top: window === window.top,
@@ -82,6 +87,39 @@
       ms: Math.round(performance.now() - t0),
     };
   };
+
+  // Multi-step applications (Workday, iCIMS, ...) swap in a new step without a
+  // page load. After the user fills once, watch for the next step's fields and
+  // fill them too. Event-driven and debounced; stops after 30 minutes.
+  const MULTI_STEP = /(^|\.)(myworkdayjobs\.com|myworkdaysite\.com|workday\.com|icims\.com|taleo\.net|successfactors\.(com|eu)|jobvite\.com)$/;
+  let observer = null;
+  let running = false;
+
+  function watch() {
+    if (observer) return;
+    let timer = null;
+    let quietUntil = performance.now() + 1500;
+    observer = new MutationObserver(() => {
+      if (running || performance.now() < quietUntil) return;
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        // Only act when a new step has unfilled fields we can answer.
+        const { matches } = await analyze();
+        const fresh = matches.filter((m) => (m.key || m.custom) && m.value && !m.field.el.hasAttribute(JF.fill.FILLED_ATTR) && !JF.fill.hasValue(m.field));
+        if (fresh.length < 2) return;
+        running = true;
+        try {
+          const res = await JF.run();
+          if (window === window.top) JF.showSummary({ ...res, unknown: res.unknown.map((u) => ({ ...u, frameId: 0 })) });
+        } finally {
+          running = false;
+          quietUntil = performance.now() + 1500;
+        }
+      }, 900);
+    });
+    observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    setTimeout(() => { observer.disconnect(); observer = null; }, 30 * 60 * 1000);
+  }
 
   // Fill answers the user just gave for pending fields in this frame.
   JF.fillAnswers = async (answers) => {

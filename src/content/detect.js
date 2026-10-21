@@ -10,7 +10,10 @@
   const HOST_ATTR = 'data-jf-ui';
   const SECTION_RE = /(work|employment|experience|position|job|education|school)[a-z]*?[\W_]{0,3}(\d+)/i;
   const HEAD_SEL = ':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > legend, :scope > div > h2, :scope > div > h3, :scope > div > h4';
-  const SECTION_TEXT ={ work: /\b(work|employment|professional)\s+(experience|history)\b|^experience$|\bemployment\b/i, education: /\beducation\b/i };
+  const SECTION_TEXT = {
+    work: /\b(work|employment|professional|job)\s+(experience|history)\b|^(work\s+)?experience$|^employment$/i,
+    education: /^education\b|\beducation(al)?\s+(history|background)\b/i,
+  };
 
   const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
@@ -23,6 +26,8 @@
         if (c.nodeType === 3) out += c.nodeValue + ' ';
         else if (c.nodeType === 1 && !TEXT_SKIP_TAGS.has(c.tagName) && !(skip && skip.has(c)) && !c.hasAttribute(HOST_ATTR)) {
           if (c.getAttribute('aria-hidden') === 'true' && !c.textContent.trim().match(/\w{3}/)) continue;
+          // Hidden status text ("Analyzing resume...", "No results") isn't the question.
+          if (c.hidden || (c.getClientRects && !c.getClientRects().length && c.tagName !== 'BR')) continue;
           walk(c);
         }
       }
@@ -75,17 +80,20 @@
 
   // Text near a control when it has no proper label: previous siblings of the
   // control or its ancestors, or a wrapper that holds only this control.
-  function nearbyText(el, groupEls) {
+  // Parent element, stepping out of shadow roots to their host.
+  const parentOf = (n) => n.parentElement || (n.parentNode && n.parentNode.host) || null;
+
+  function nearbyText(el, groupEls, depthLimit = 5) {
     const skip = new Set(groupEls || [el]);
     let node = el;
-    for (let depth = 0; depth < 5 && node && node.parentElement; depth++) {
+    for (let depth = 0; depth < depthLimit && node && parentOf(node); depth++) {
       let sib = node.previousElementSibling;
       for (let i = 0; sib && i < 3; i++, sib = sib.previousElementSibling) {
         if (sib.matches('input,select,textarea') || sib.querySelector('input:not([type=hidden]),select,textarea')) break;
         const t = textOf(sib, skip);
         if (t && t.length <= 300) return t;
       }
-      node = node.parentElement;
+      node = parentOf(node);
       // Stop once the wrapper also holds other questions' controls.
       const controls = node.querySelectorAll('input:not([type=hidden]),select,textarea,button[aria-haspopup=listbox]');
       if ([...controls].some((c) => !skip.has(c) && ![...skip].some((s) => s.contains(c)))) break;
@@ -96,9 +104,19 @@
   }
 
   function attrText(el) {
-    return [el.name, el.id, el.getAttribute('data-automation-id'), el.getAttribute('data-qa'), el.getAttribute('data-testid'), el.getAttribute('formcontrolname')]
+    const path = el.closest('[data-field-path]');
+    return [el.name, el.id, el.getAttribute('data-automation-id'), el.getAttribute('data-qa'), el.getAttribute('data-testid'), el.getAttribute('formcontrolname'), path && path.getAttribute('data-field-path')]
       .filter(Boolean)
       .join(' ');
+  }
+
+  // Split date inputs (Workday: separate Month / Year spinbuttons).
+  const DATE_PART = { month: 'month', mm: 'month', year: 'year', yyyy: 'year', yy: 'year', day: 'day', dd: 'day' };
+  function datePartOf(el, label) {
+    const l = label.toLowerCase().replace(/[^a-z]/g, '');
+    if (DATE_PART[l]) return DATE_PART[l];
+    const m = (el.getAttribute('data-automation-id') || '').match(/dateSection(Month|Year|Day)/i);
+    return m ? m[1].toLowerCase() : null;
   }
 
   // Which repeating block (work/education) a field sits in, and its index.
@@ -123,7 +141,7 @@
         if (t.length < 60 && SECTION_TEXT.work.test(t)) return { section: 'work', index: null };
         return { section: null, index: null };
       }
-      node = node.parentElement || (node.getRootNode() && node.getRootNode().host) || null;
+      node = parentOf(node);
     }
     return { section: null, index: null };
   }
@@ -138,11 +156,11 @@
     if (SKIP_TYPES.has(type)) return null;
     if (type === 'radio' || type === 'checkbox' || type === 'file') return type;
     if (type === 'date' || type === 'month') return type;
-    if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-autocomplete') === 'list') return 'combobox';
+    if (el.getAttribute('role') === 'combobox' || el.getAttribute('aria-autocomplete') === 'list' || el.getAttribute('data-automation-id') === 'searchBox') return 'combobox';
     return 'text';
   }
 
-  const CONTROL_SEL = 'input, select, textarea, button[aria-haspopup="listbox"]';
+  const CONTROL_SEL = 'input, select, textarea, button[aria-haspopup="listbox"], button[aria-pressed], [role=button][aria-pressed]';
 
   // Collect controls in document order, descending into open shadow roots
   // and same-origin iframes are handled by injecting into every frame.
@@ -158,9 +176,11 @@
   function usable(el, kind) {
     if (el.disabled || el.closest('[' + HOST_ATTR + ']')) return false;
     if (el.readOnly && kind !== 'combobox' && kind !== 'date') return false;
-    if (kind === 'file' || kind === 'radio' || kind === 'checkbox') {
-      return isVisible(el) || isVisible(labelElementFor(el)) || isVisible(el.parentElement);
-    }
+    // Upload inputs hide inside drop zones; styled radios/checkboxes hide
+    // behind their labels. A hidden checkbox with no visible label is
+    // usually a widget's internal state (e.g. Ashby's Yes/No buttons).
+    if (kind === 'file') return isVisible(el) || isVisible(labelElementFor(el)) || isVisible(el.parentElement);
+    if (kind === 'radio' || kind === 'checkbox') return isVisible(el) || isVisible(labelElementFor(el));
     if (el.getAttribute('aria-hidden') === 'true' || el.tabIndex < -1) return false;
     return isVisible(el);
   }
@@ -198,21 +218,52 @@
     return nearbyText(container, [container]);
   }
 
+  // Question for a split date input: climb to the wrapper holding all parts.
+  function datePartQuestion(el) {
+    let c = el.parentElement;
+    for (let i = 0; i < 4 && c; i++, c = c.parentElement) {
+      const legend = c.matches('fieldset') && c.querySelector(':scope > legend');
+      if (legend) return textOf(legend);
+      if (c.querySelectorAll('input').length >= 2) return nearbyText(c, [c]);
+    }
+    return '';
+  }
+
+  // Context for file inputs, whose own label is often just "Attach" or
+  // "Choose a file": the nearest different text above them.
+  const GENERIC_FILE_LABEL = /^(attach|upload|choose|browse|select|drop|add|or drag|drag)\b/i;
+  function fileContext(el, label) {
+    if (label && label.length > 3 && !GENERIC_FILE_LABEL.test(label)) return '';
+    let node = el;
+    for (let depth = 0; depth < 8 && node; depth++) {
+      for (let sib = node.previousElementSibling, i = 0; sib && i < 3; i++, sib = sib.previousElementSibling) {
+        if (sib.matches('input,select,textarea') || sib.querySelector('input:not([type=hidden]),select,textarea')) break;
+        const t = textOf(sib, new Set([el]));
+        if (t && t !== label && t.length <= 200) return t;
+      }
+      node = parentOf(node);
+    }
+    return '';
+  }
+
   let seq = 0;
 
   function makeField(el, kind, extra = {}) {
-    const label = extra.label != null ? extra.label : directLabel(el);
+    let label = extra.label != null ? extra.label : directLabel(el);
+    const datePart = kind === 'text' ? datePartOf(el, label) : null;
+    if (datePart) label = datePartQuestion(el) || label;
     const { section, index } = sectionOf(el);
     return {
       id: ++seq,
       el,
       kind,
       label,
-      nearby: label ? '' : nearbyText(el),
+      datePart,
+      nearby: kind === 'file' ? fileContext(el, label) : label ? '' : nearbyText(el),
       placeholder: clean(el.getAttribute('placeholder')),
       attrs: attrText(el),
       autocomplete: (el.getAttribute('autocomplete') || '').toLowerCase(),
-      required: el.required || el.getAttribute('aria-required') === 'true',
+      required: el.required || el.getAttribute('aria-required') === 'true' || /[*✱]/.test((labelElementFor(el) || {}).textContent || ''),
       section,
       index,
       options: kind === 'select' ? optionsOfSelect(el) : [],
@@ -220,11 +271,38 @@
     };
   }
 
+  // Toggle-button groups (Ashby's Yes/No buttons and similar).
+  function buttonGroupField(container) {
+    const buttons = [...container.querySelectorAll(':scope > button[aria-pressed], :scope > [role=button][aria-pressed]')];
+    const entry = container.parentElement;
+    let label = '';
+    const lab = entry && entry.querySelector(':scope > label');
+    if (lab) label = textOf(lab);
+    if (!label) label = nearbyText(container, [container]);
+    return makeField(container, 'buttonGroup', {
+      label,
+      options: buttons.map((b) => ({ text: textOf(b) || b.getAttribute('aria-label') || '', value: b.getAttribute('data-option') || '', el: b })),
+      group: buttons,
+      required: !!(lab && /[*✱]/.test(lab.textContent)),
+    });
+  }
+
   function scan(root = document) {
     const controls = collect(root, []);
     const fields = [];
     const groups = new Map(); // radio/checkbox name -> elements
+    const buttonGroups = new Set();
     for (const el of controls) {
+      if (el.hasAttribute('aria-pressed')) {
+        const parent = el.parentElement;
+        if (!parent || buttonGroups.has(parent) || !isVisible(el)) continue;
+        const n = parent.querySelectorAll(':scope > button[aria-pressed], :scope > [role=button][aria-pressed]').length;
+        if (n >= 2 && n <= 8) {
+          buttonGroups.add(parent);
+          fields.push(buttonGroupField(parent));
+        }
+        continue;
+      }
       const kind = kindOf(el);
       if (!kind || !usable(el, kind)) continue;
       if (kind === 'radio' || kind === 'checkbox') {

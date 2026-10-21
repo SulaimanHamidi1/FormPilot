@@ -11,6 +11,7 @@ const CONTENT_FILES = [
   'src/content/fill.js',
   'src/content/ui.js',
   'src/content/main.js',
+  'src/content/prompt.js',
 ];
 
 async function ensureInjected(tabId) {

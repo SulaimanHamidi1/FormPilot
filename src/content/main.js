@@ -15,10 +15,11 @@
   }
 
   // Which leftover fields are worth asking the user about.
-  function needsAnswer(m, status) {
+  function needsAnswer(m, status, ignored) {
     const f = m.field;
     const q = JF.match.questionText(f);
     if (m.skip || !q || q.length < 2 || q.length > 500) return false;
+    if (ignored.has(JF.text.normalize(q))) return false;
     if (status === 'kept' || status === 'filled') return false;
     if (f.kind === 'file' && m.key !== 'resume') return false;
     if (f.kind === 'checkbox' && !f.required) return false;
@@ -45,6 +46,7 @@
     let resumePromise;
     const ctx = { settings, getResume: () => (resumePromise = resumePromise || JF.storage.getResume()) };
 
+    const ignored = new Set(settings.ignored || []);
     const seen = new Set();
     const counts = { filled: 0, kept: 0, failed: 0 };
     pending.clear();
@@ -62,7 +64,7 @@
       counts.kept += res.kept.length;
       counts.failed += res.failed.length;
       for (const m of fresh) {
-        if (needsAnswer(m, statusOf.get(m))) {
+        if (needsAnswer(m, statusOf.get(m), ignored)) {
           pending.set(m.field.id, m);
           if (settings.highlight) JF.fill.highlight(m.field.el, JF.fill.WARN_COLOR);
         }
@@ -105,6 +107,14 @@
     if (s.kept) parts.push(`kept ${s.kept} you'd already entered`);
     if (s.unknown.length) parts.push(`${s.unknown.length} need${s.unknown.length === 1 ? 's' : ''} your answer`);
     JF.ui.toast(parts.join(' · ') + '. Review before submitting.', { warn: !s.filled || s.unknown.length > 0, ms: 6000 });
+  };
+
+  // Scroll a pending field into view (top frame only).
+  JF.focusPending = (item) => {
+    const m = item.frameId === 0 || item.frameId == null ? pending.get(item.id) : null;
+    if (!m || !m.field.el.isConnected) return;
+    m.field.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    m.field.el.focus({ preventScroll: true });
   };
 
   JF.analyze = analyze;

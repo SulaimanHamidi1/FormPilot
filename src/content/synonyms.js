@@ -24,7 +24,7 @@
       autocomplete: ['family-name'],
       not: ['first', 'emergency', 'reference', 'referrer', 'referral'],
     }),
-    R('personal.preferredName', ['preferred name', 'preferred first name', 'nickname', 'name you go by', 'goes by'], {
+    R('personal.preferredName', ['preferred name', 'preferred first name', 'nickname', 'name you go by', 'goes by', 'name youd prefer', 'prefer us to use', 'prefer to be called', 'would you like us to call you', 'what should we call you'], {
       attrs: ['preferred name', 'preferredname', 'nickname'],
       autocomplete: ['nickname'],
     }),
@@ -74,7 +74,7 @@
       autocomplete: ['country', 'country-name'],
       not: ['phone', 'code', 'citizenship', 'authorized', 'calling', 'dial', 'countries'],
     }),
-    R('personal.location', ['location', 'current location', 'where are you located', 'city and state', 'city state', 'based', 'where are you based', 'location city'], {
+    R('personal.location', ['location', 'current location', 'where are you located', 'city and state', 'city state', 'based', 'where are you based', 'location city', 'plan on working from', 'where will you be working from', 'where do you plan to work', 'where do you live', 'where do you currently live'], {
       attrs: ['location', 'current location', 'candidate location'],
       not: ['preferred', 'office', 'desired', 'willing', 'relocate', 'job location', 'work location'],
     }),
@@ -93,7 +93,7 @@
     R('work.company', ['current company', 'current employer', 'company', 'employer', 'company name', 'employer name', 'organization', 'most recent employer', 'present employer'], {
       attrs: ['company', 'employer', 'org', 'organization', 'company name', 'current company'],
       autocomplete: ['organization'],
-      not: ['website', 'url', 'size', 'previously worked', 'worked for', 'know anyone', 'referr', 'why', 'hear', 'address', 'phone', 'industry'],
+      not: ['website', 'url', 'size', 'previously worked', 'worked for', 'know anyone', 'referr', 'why', 'hear', 'address', 'phone', 'industry', 'agreement', 'restriction', 'interest', 'non compete'],
     }),
     R('work.title', ['current title', 'job title', 'title', 'current job title', 'position', 'role', 'current role', 'current position', 'most recent title'], {
       attrs: ['title', 'job title', 'jobtitle', 'position', 'current title'],
@@ -125,7 +125,7 @@
     // ---- Education ----
     R('education.school', ['school', 'university', 'college', 'institution', 'school name', 'university name', 'school university', 'educational institution', 'name of school', 'most recent school'], {
       attrs: ['school', 'university', 'college', 'institution', 'school name'],
-      not: ['high school diploma', 'graduated', 'currently enrolled', 'attend'],
+      not: ['high school diploma'],
     }),
     R('education.degree', ['degree', 'degree type', 'highest degree', 'level of education', 'highest level of education', 'education level', 'degree obtained', 'qualification'], {
       attrs: ['degree', 'degree type', 'education level'],
@@ -162,7 +162,7 @@
     R('resume', ['resume', 'cv', 'resume cv', 'upload resume', 'attach resume', 'curriculum vitae', 'resume file'], {
       attrs: ['resume', 'cv', 'curriculum vitae', 'resume file'],
       kinds: ['file'],
-      not: ['cover'],
+      not: ['cover', 'autofill', 'auto fill', 'autocomplete'],
     }),
 
     // ---- Work authorization ----
@@ -196,9 +196,12 @@
       not: ['end', 'school', 'employment start'],
     }),
     R('preferences.noticePeriod', ['notice period', 'notice', 'how much notice', 'current notice'], { attrs: ['notice', 'notice period'] }),
-    R('preferences.howDidYouHear', ['how did you hear', 'hear about us', 'hear about this', 'source', 'how did you find', 'referral source', 'where did you hear', 'how did you learn', 'where did you find'], {
+    R('preferences.howDidYouHear', ['how did you hear', 'hear about us', 'hear about this', 'source', 'how did you find', 'referral source', 'where did you hear', 'how did you learn', 'where did you find', 'how you heard', 'heard about', 'learn about this', 'find out about'], {
       attrs: ['source', 'how did you hear', 'referral source', 'hear about', 'sourcedropdown'],
       not: ['open source'],
+    }),
+    R('preferences.previouslyEmployed', ['previously worked', 'previously been employed', 'previously employed', 'ever worked for', 'ever been employed by', 'former employee', 'worked for us before', 'worked here before', 'consulted for', 'have you worked at', 'have you worked for'], {
+      attrs: ['previous worker', 'previousworker', 'previously employed', 'former employee'],
     }),
     R('preferences.desiredTitle', ['desired title', 'desired position', 'position applying', 'role applying', 'desired job title'], { attrs: ['desired title', 'desired position'] }),
     R('preferences.yearsExperience', ['years of experience', 'years experience', 'how many years', 'total experience', 'years of professional experience', 'total years'], {

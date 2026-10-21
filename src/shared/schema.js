@@ -79,6 +79,7 @@
         { key: 'noticePeriod', label: 'Notice period (e.g. 2 weeks)' },
         { key: 'howDidYouHear', label: 'How did you hear about us? (default answer)', placeholder: 'LinkedIn' },
         { key: 'yearsExperience', label: 'Total years of professional experience', type: 'number' },
+        { key: 'previouslyEmployed', label: 'Have you previously worked for the companies you usually apply to?', type: 'select', choices: 'yesNo' },
       ],
     },
     {

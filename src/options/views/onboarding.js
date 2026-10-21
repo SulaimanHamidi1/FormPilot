@@ -11,7 +11,6 @@
     { question: 'Are you willing to undergo a background check?', type: 'yesNo' },
     { question: 'Are you willing to undergo a drug test?', type: 'yesNo' },
     { question: "Do you have a valid driver's license?", type: 'yesNo' },
-    { question: 'Have you ever worked for this company before?', type: 'yesNo', answer: 'No' },
     { question: 'Are you currently employed?', type: 'yesNo' },
     { question: 'Are you able to work on-site / commute to the office?', type: 'yesNo' },
     { question: 'Are you willing to travel for work?', type: 'yesNo' },

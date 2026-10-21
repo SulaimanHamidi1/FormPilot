@@ -98,3 +98,13 @@ test('option picking', () => {
   assert.strictEqual(pick(opts('BS', 'MS', 'PhD'), "Master's"), 'MS');
   assert.strictEqual(pick(opts('Asian', 'White'), 'Black or African American'), undefined);
 });
+
+test('custom answers match reworded questions but not unrelated ones', () => {
+  const w = loadPage('test/pages/forms/generic.html');
+  const { customScore } = w.JF.match;
+  assert.ok(customScore('Why do you want to work at Globex?', 'Why do you want to work at Acme?') >= 0.72);
+  assert.ok(customScore('What shift would you prefer?', 'Which shift do you prefer?') >= 0.72);
+  assert.ok(customScore('Do you have a valid drivers license?', "Do you have a valid driver's license?") >= 0.9);
+  assert.ok(customScore('What is your favorite color?', 'Why do you want to work at Acme?') < 0.5);
+  assert.ok(customScore('Are you willing to travel?', 'Are you willing to relocate?') < 0.72);
+});

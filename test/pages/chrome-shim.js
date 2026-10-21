@@ -28,7 +28,12 @@
   window.chrome = Object.assign(window.chrome || {}, {
     storage: { local, onChanged: { addListener: (fn) => listeners.push(fn) } },
     runtime: {
-      sendMessage: async (msg) => { console.log('[shim] sendMessage', msg); return { ok: true }; },
+      sendMessage: async (msg) => {
+        console.log('[shim] sendMessage', msg);
+        // Stand-in for the service worker on single-frame test pages.
+        if (msg.type === 'fillAnswers') return { ok: true, filled: await window.JF.fillAnswers(msg.answers) };
+        return { ok: true };
+      },
       openOptionsPage: () => {},
       getURL: (p) => '/' + p,
       onMessage: { addListener: () => {} },

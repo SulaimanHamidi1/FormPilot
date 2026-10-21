@@ -1,7 +1,15 @@
 // Background service worker: injects the content scripts on demand (popup
 // button or keyboard shortcut). Nothing runs on pages until the user asks.
 
-const CONTENT_FILES = ['src/content/main.js'];
+const CONTENT_FILES = [
+  'src/shared/schema.js',
+  'src/shared/storage.js',
+  'src/shared/text.js',
+  'src/content/synonyms.js',
+  'src/content/detect.js',
+  'src/content/match.js',
+  'src/content/main.js',
+];
 
 async function ensureInjected(tabId) {
   const probes = await chrome.scripting.executeScript({

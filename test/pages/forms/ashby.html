@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ashby application fixture</title>
+  <style>
+    .ashby-application-form-input-yesno input[type=checkbox] { display: none; }
+    [aria-pressed=true] { background: #2563eb; color: #fff; }
+    .listbox { border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<!-- Structure mirrors jobs.ashbyhq.com/<company>/<id>/application as of 2026-10. -->
+<div class="ashby-application-form-container">
+  <div class="ashby-application-form-autofill-pane">
+    <div class="ashby-application-form-autofill-input-root">
+      <p>Autofill from resume</p>
+      <p>Upload your resume here to autofill key application fields.</p>
+      <input type="file">
+    </div>
+  </div>
+  <div class="ashby-application-form-section-container">
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_name">
+      <label class="ashby-application-form-question-title" for="_systemfield_name">Legal Name</label>
+      <div><input type="text" id="_systemfield_name" name="_systemfield_name" placeholder="Type here..." required></div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_email">
+      <label class="ashby-application-form-question-title" for="_systemfield_email">Email</label>
+      <div><input type="email" id="_systemfield_email" name="_systemfield_email" placeholder="hello@example.com..." required></div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="phone-uuid">
+      <label class="ashby-application-form-question-title" for="eeea6952-phone">Phone</label>
+      <input type="tel" id="eeea6952-phone" name="eeea6952-phone" placeholder="1-415-555-1234..." required>
+    </div>
+    <div class="ashby-application-form-texting-consent-description">
+      <label><input type="radio" name="communicationConsent" value="given"> Yes - I consent to receiving text messages</label>
+      <label><input type="radio" name="communicationConsent" value="notGiven"> No - I do not consent to receiving text messages</label>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_location">
+      <label class="ashby-application-form-question-title" for="_systemfield_location">Where do you plan on working from (for payroll tax purposes)?</label>
+      <div>
+        <input class="ashby-application-form-input-autocomplete" placeholder="Start typing..." aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" role="combobox" value="">
+        <button type="button"></button>
+      </div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_resume">
+      <label class="ashby-application-form-question-title" for="_systemfield_resume">Resume</label>
+      <div class="ashby-application-form-input-file"><input type="file" id="_systemfield_resume" required></div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="linkedin-uuid">
+      <label class="ashby-application-form-question-title" for="linkedin-uuid">LinkedIn Profile</label>
+      <div><input type="text" id="linkedin-uuid" name="linkedin-uuid" placeholder="Type here..." required></div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="yesno-1">
+      <label class="ashby-application-form-question-title" for="yesno-1">Are you legally authorized to work in the United States?</label>
+      <div class="ashby-application-form-input-yesno">
+        <button class="ashby-application-form-input-yesno-option" type="button" aria-pressed="false" data-option="yes">Yes</button>
+        <button class="ashby-application-form-input-yesno-option" type="button" aria-pressed="false" data-option="no">No</button>
+        <input type="checkbox" tabindex="-1" name="yesno-1">
+      </div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="yesno-2">
+      <label class="ashby-application-form-question-title" for="yesno-2">Are you currently based in the San Francisco Bay Area?</label>
+      <div class="ashby-application-form-input-yesno">
+        <button class="ashby-application-form-input-yesno-option" type="button" aria-pressed="false" data-option="yes">Yes</button>
+        <button class="ashby-application-form-input-yesno-option" type="button" aria-pressed="false" data-option="no">No</button>
+        <input type="checkbox" tabindex="-1" name="yesno-2">
+      </div>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="essay-1">
+      <label class="ashby-application-form-question-title" for="essay-1">Please briefly describe your experience building partnerships.</label>
+      <textarea id="essay-1" name="essay-1" placeholder="Type here..." required></textarea>
+    </div>
+  </div>
+  <div class="ashby-application-form-section-container">
+    <h3>U.S. Equal Employment Opportunity Information</h3>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_eeoc_gender">
+      <label class="ashby-application-form-question-title">Gender</label>
+      <fieldset>
+        <label><input type="radio" name="_systemfield_eeoc_gender" value="Male"> Male</label>
+        <label><input type="radio" name="_systemfield_eeoc_gender" value="Female"> Female</label>
+        <label><input type="radio" name="_systemfield_eeoc_gender" value="Decline to self-identify"> Decline to self-identify</label>
+      </fieldset>
+    </div>
+    <div class="ashby-application-form-field-entry" data-field-path="_systemfield_eeoc_veteran_status">
+      <label class="ashby-application-form-question-title">Veteran Status</label>
+      <fieldset>
+        <label><input type="radio" name="_systemfield_eeoc_veteran_status" value="I am not a protected veteran"> I am not a protected veteran</label>
+        <label><input type="radio" name="_systemfield_eeoc_veteran_status" value="I identify as one or more of the classifications of protected veteran"> I identify as one or more of the classifications of protected veteran</label>
+        <label><input type="radio" name="_systemfield_eeoc_veteran_status" value="I don't wish to answer"> I don't wish to answer</label>
+      </fieldset>
+    </div>
+  </div>
+  <button type="submit" class="ashby-application-form-submit-button">Submit Application</button>
+</div>
+<script>
+  // Yes/No toggles behave like Ashby's.
+  for (const group of document.querySelectorAll('.ashby-application-form-input-yesno')) {
+    const cb = group.querySelector('input[type=checkbox]');
+    for (const b of group.querySelectorAll('button')) {
+      b.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        cb.checked = b.dataset.option === 'yes';
+      });
+    }
+  }
+  // Location autocomplete with a listbox of options.
+  const loc = document.querySelector('[data-field-path=_systemfield_location] input');
+  const list = document.createElement('div');
+  list.className = 'listbox';
+  list.setAttribute('role', 'listbox');
+  list.id = 'loc-listbox';
+  list.hidden = true;
+  loc.setAttribute('aria-controls', 'loc-listbox');
+  loc.after(list);
+  loc.addEventListener('input', () => {
+    const q = loc.value.trim().toLowerCase();
+    list.innerHTML = '';
+    for (const name of ['San Francisco, California, United States', 'San Diego, California, United States', 'New York, New York, United States']) {
+      if (!q || !name.toLowerCase().startsWith(q.split(',')[0])) continue;
+      const o = document.createElement('div');
+      o.setAttribute('role', 'option');
+      o.textContent = name;
+      o.addEventListener('click', () => { loc.value = name; loc.dataset.selected = name; list.hidden = true; });
+      list.append(o);
+    }
+    list.hidden = !list.children.length;
+    loc.setAttribute('aria-expanded', String(!list.hidden));
+  });
+</script>
+</body>
+</html>

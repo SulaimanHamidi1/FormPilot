@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lever application fixture</title>
+  <style>
+    .application-question { list-style: none; margin: 8px 0; }
+    .dropdown-results { border: 1px solid #ccc; }
+    .invisible-resume-upload { position: absolute; opacity: 0; width: 1px; }
+  </style>
+</head>
+<body>
+<!-- Structure mirrors jobs.lever.co/<company>/<id>/apply as of 2026-10. -->
+<form id="application-form" method="POST" enctype="multipart/form-data">
+  <div class="section application-form page-centered">
+    <h4>Submit your application</h4>
+    <ul>
+      <li class="application-question resume">
+        <label>
+          <div class="application-label">Resume/CV <span class="required">✱</span></div>
+          <div class="application-field">
+            <a href="#" class="postings-btn template-btn-utility visible-resume-upload">
+              <span class="default-label">ATTACH RESUME/CV</span>
+              <input type="file" class="invisible-resume-upload" id="resume-upload-input" name="resume">
+            </a>
+            <span class="resume-upload-working" style="display:none">Analyzing resume...</span>
+            <span class="resume-upload-failure" style="display:none">Couldn't auto-read resume.</span>
+          </div>
+        </label>
+      </li>
+      <li class="application-question">
+        <label><div class="application-label">Full name<span class="required">✱</span></div>
+        <div class="application-field"><input type="text" name="name" required></div></label>
+      </li>
+      <li class="application-question">
+        <label><div class="application-label">Email<span class="required">✱</span></div>
+        <div class="application-field"><input type="email" name="email" required></div></label>
+      </li>
+      <li class="application-question">
+        <label><div class="application-label">Phone</div>
+        <div class="application-field"><input type="text" name="phone"></div></label>
+      </li>
+      <li class="application-question">
+        <label><div class="application-label">Current location <span class="required">✱</span></div>
+        <div class="application-field">
+          <input type="text" id="location-input" name="location" required autocomplete="off">
+          <input type="hidden" name="selectedLocation" id="selected-location">
+          <div class="dropdown-container"><div class="dropdown-results" id="location-results" style="display:none"></div>
+          <div class="dropdown-no-results" style="display:none">No location found. Try entering a different location</div>
+          <div class="dropdown-loading-results" style="display:none">Loading</div></div>
+        </div></label>
+      </li>
+      <li class="application-question">
+        <label><div class="application-label">Current company</div>
+        <div class="application-field"><input type="text" name="org"></div></label>
+      </li>
+    </ul>
+  </div>
+  <div class="section application-form page-centered">
+    <h4>Links</h4>
+    <ul>
+      <li class="application-question"><label><div class="application-label">LinkedIn URL</div><div class="application-field"><input type="text" name="urls[LinkedIn]"></div></label></li>
+      <li class="application-question"><label><div class="application-label">GitHub URL</div><div class="application-field"><input type="text" name="urls[GitHub]"></div></label></li>
+      <li class="application-question"><label><div class="application-label">Portfolio URL</div><div class="application-field"><input type="text" name="urls[Portfolio]"></div></label></li>
+    </ul>
+  </div>
+  <div class="section application-form page-centered">
+    <input type="hidden" name="cards[card-1][baseTemplate]" value="x">
+    <ul>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width multiple-select"><div class="text">Language Skill(s) (Check all that apply)<span class="required">✱</span></div></div>
+        <div class="application-field"><ul>
+          <li><label><input type="checkbox" name="cards[card-1][field0]" value="English (ENG)" required><span class="application-answer-alternative">English (ENG)</span></label></li>
+          <li><label><input type="checkbox" name="cards[card-1][field0]" value="Spanish (SPA)" required><span class="application-answer-alternative">Spanish (SPA)</span></label></li>
+          <li><label><input type="checkbox" name="cards[card-1][field0]" value="French (FRA)" required><span class="application-answer-alternative">French (FRA)</span></label></li>
+        </ul></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width text"><div class="text">Preferred Name | What would you like us to call you?</div></div>
+        <div class="application-field full-width"><input type="text" name="cards[card-1][field1]" placeholder="Type your response"></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width text"><div class="text">Name Pronunciation | How do you pronounce your name?</div></div>
+        <div class="application-field full-width"><input type="text" name="cards[card-1][field2]" placeholder="Type your response"></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width multiple-choice"><div class="text">Are you legally authorized to work in the country for which you are applying?<span class="required">✱</span></div></div>
+        <div class="application-field"><ul>
+          <li><label><input type="radio" name="cards[card-2][field0]" value="Yes" required><span class="application-answer-alternative">Yes</span></label></li>
+          <li><label><input type="radio" name="cards[card-2][field0]" value="No" required><span class="application-answer-alternative">No</span></label></li>
+        </ul></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width multiple-choice"><div class="text">Will you now or in the future require sponsorship for employment visa status (e.g., H-1B, etc.)?<span class="required">✱</span></div></div>
+        <div class="application-field"><ul>
+          <li><label><input type="radio" name="cards[card-2][field1]" value="Yes" required><span class="application-answer-alternative">Yes</span></label></li>
+          <li><label><input type="radio" name="cards[card-2][field1]" value="No" required><span class="application-answer-alternative">No</span></label></li>
+        </ul></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width dropdown"><div class="text">Which university are you currently attending or did you last attend?</div></div>
+        <div class="application-field full-width"><div class="application-dropdown"><select name="cards[card-3][field0]" required>
+          <option value="">Select...</option><option>Stanford University</option><option>University of California, Berkeley</option><option>University of California, Los Angeles</option><option>Other (School Not Listed)</option>
+        </select></div></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width dropdown"><div class="text">Please tell us how you heard about this opportunity.<span class="required">✱</span></div></div>
+        <div class="application-field full-width"><div class="application-dropdown"><select name="cards[card-4][field0]" required>
+          <option value="">Select...</option><option>BuiltIn</option><option>Friend or Family</option><option>LinkedIn</option><option>Other</option>
+        </select></div></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width textarea"><div class="text">Why do you want to work at Acme?</div></div>
+        <div class="application-field full-width"><textarea name="cards[card-5][field0]"></textarea></div>
+      </div></li>
+      <li class="application-question custom-question"><div>
+        <div class="application-label full-width multiple-choice"><div class="text">We may use AI notetakers during interviews. Do you consent to their use?<span class="required">✱</span></div></div>
+        <div class="application-field"><ul>
+          <li><label><input type="radio" name="cards[card-6][field0]" value="Yes, I consent" required><span>Yes, I consent</span></label></li>
+          <li><label><input type="radio" name="cards[card-6][field0]" value="No, I do not consent" required><span>No, I do not consent</span></label></li>
+        </ul></div>
+      </div></li>
+    </ul>
+  </div>
+  <div class="section application-additional page-centered">
+    <label for="additional-information">Additional information</label>
+    <textarea id="additional-information" name="comments" placeholder="Add a cover letter or anything else you want to share."></textarea>
+  </div>
+  <div class="section application-eeo page-centered">
+    <h4>U.S. Equal Employment Opportunity information</h4>
+    <ul>
+      <li class="application-question"><label><div class="application-label">Gender</div><div class="application-field application-dropdown"><select name="eeo[gender]">
+        <option value="">Select ...</option><option value="Male">Male</option><option value="Female">Female</option><option value="Decline to self-identify">Decline to self-identify</option></select></div></label></li>
+      <li class="application-question"><label><div class="application-label">Race</div><div class="application-field application-dropdown"><select name="eeo[race]">
+        <option value="">Select ...</option><option>Asian (Not Hispanic or Latino)</option><option>Black or African American (Not Hispanic or Latino)</option><option>White (Not Hispanic or Latino)</option><option>Decline to self-identify</option></select></div></label></li>
+      <li class="application-question"><label><div class="application-label">Veteran status</div><div class="application-field application-dropdown"><select name="eeo[veteran]">
+        <option value="">Select ...</option><option>I am a veteran</option><option>I am not a veteran</option><option>Decline to self-identify</option></select></div></label></li>
+    </ul>
+  </div>
+  <ul><li><label><input type="checkbox" name="consent[marketing]" value="1"> Acme has my consent to contact me about future job opportunities.</label></li></ul>
+  <button type="submit" class="template-btn-submit">Submit application</button>
+</form>
+<script>
+  // Minimal stand-in for Lever's location autocomplete.
+  const input = document.getElementById('location-input');
+  const results = document.getElementById('location-results');
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    results.innerHTML = '';
+    results.style.display = q.length > 2 ? 'block' : 'none';
+    if (q.length <= 2) return;
+    for (const name of ['San Francisco, California, United States', 'South San Francisco, California, United States']) {
+      if (!name.toLowerCase().includes(q.split(',')[0].toLowerCase())) continue;
+      const d = document.createElement('div');
+      d.className = 'dropdown-location';
+      d.textContent = name;
+      d.addEventListener('click', () => {
+        input.value = name;
+        document.getElementById('selected-location').value = JSON.stringify({ name });
+        results.style.display = 'none';
+      });
+      results.append(d);
+    }
+  });
+</script>
+</body>
+</html>

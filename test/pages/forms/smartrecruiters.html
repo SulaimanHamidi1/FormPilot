@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SmartRecruiters application fixture</title>
+</head>
+<body>
+<!-- SmartRecruiters "oneclick-ui" renders every control inside open shadow
+     roots of spl-* web components. This fixture reproduces that nesting. -->
+<oc-app-root>
+  <main>
+    <h1>Direct Support Professional</h1>
+    <oc-apply-with-resume>
+      <div>Choose an option to autocomplete your application.</div>
+      <div><spl-form-field><spl-dropzone data-kind="autofill"></spl-dropzone></spl-form-field></div>
+    </oc-apply-with-resume>
+    <section>
+      <h2>Your Profile</h2>
+      <spl-input data-id="first-name-input" data-label="First name*" data-ac="given-name"></spl-input>
+      <spl-input data-id="last-name-input" data-label="Last name*" data-ac="family-name"></spl-input>
+      <spl-input data-id="email-input" data-label="Email*" data-ac="email" data-type="email"></spl-input>
+      <spl-input data-id="confirm-email-input" data-label="Confirm your email*" data-ac="email" data-type="email"></spl-input>
+      <spl-input data-id="spl-form-element_10" data-label="City" data-ac="off"></spl-input>
+      <spl-phone-field><spl-input data-id="spl-form-element_5" data-aria="Phone number" data-type="tel"></spl-input></spl-phone-field>
+    </section>
+    <oc-resume-upload>
+      <div>Resume</div>
+      <spl-form-field><spl-dropzone data-kind="resume"></spl-dropzone></spl-form-field>
+    </oc-resume-upload>
+    <section>
+      <h2>Social profiles</h2>
+      <spl-input data-id="linkedin-input" data-label="LinkedIn"></spl-input>
+      <spl-input data-id="facebook-input" data-label="Facebook"></spl-input>
+      <spl-input data-id="twitter-input" data-label="X (fka Twitter)"></spl-input>
+      <spl-input data-id="website-input" data-label="Website"></spl-input>
+    </section>
+    <spl-textarea data-id="hiring-manager-message-input" data-label="Let the company know about your interest working there"></spl-textarea>
+  </main>
+</oc-app-root>
+<script>
+  let n = 0;
+  customElements.define('spl-input', class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({ mode: 'open' });
+      const id = this.dataset.id;
+      root.innerHTML = (this.dataset.label ? `<spl-typography-label><label for="${id}">${this.dataset.label}</label></spl-typography-label>` : '') +
+        `<div class="input-wrapper"><input id="${id}" type="${this.dataset.type || 'text'}"${this.dataset.ac ? ` autocomplete="${this.dataset.ac}"` : ''}${this.dataset.aria ? ` aria-label="${this.dataset.aria}"` : ''}></div>`;
+    }
+  });
+  customElements.define('spl-textarea', class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({ mode: 'open' });
+      root.innerHTML = `<label for="${this.dataset.id}">${this.dataset.label}</label><textarea id="${this.dataset.id}"></textarea>`;
+    }
+  });
+  customElements.define('spl-dropzone', class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({ mode: 'open' });
+      const id = 'spl-dropzone-file-input-' + ++n;
+      root.innerHTML = `<div class="dropzone"><label for="${id}">Choose a file or drop it here</label><input type="file" id="${id}" data-kind="${this.dataset.kind}"></div>`;
+    }
+  });
+  customElements.define('spl-form-field', class extends HTMLElement {});
+</script>
+</body>
+</html>

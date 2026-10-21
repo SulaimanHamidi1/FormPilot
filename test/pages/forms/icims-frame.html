@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>iCIMS application frame</title>
+</head>
+<body class="iCIMS_Body">
+<!-- Mirrors iCIMS' candidate profile step (PersonProfileFields ids, rcf custom fields). -->
+<form id="cp_form" class="iCIMS_Forms" method="post">
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="PersonProfileFields.FirstName">First Name <span class="iCIMS_Required">*</span></label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="PersonProfileFields.FirstName" name="PersonProfileFields.FirstName" class="iCIMS_Input"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="PersonProfileFields.MiddleName">Middle Name</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="PersonProfileFields.MiddleName" name="PersonProfileFields.MiddleName"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="PersonProfileFields.LastName">Last Name <span class="iCIMS_Required">*</span></label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="PersonProfileFields.LastName" name="PersonProfileFields.LastName"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="PersonProfileFields.Email">Email <span class="iCIMS_Required">*</span></label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="PersonProfileFields.Email" name="PersonProfileFields.Email"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.PhoneNumber">Phone Number</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="-1_PersonProfileFields.PhoneNumber" name="-1_PersonProfileFields.PhoneNumber"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.AddressStreet1">Address</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="-1_PersonProfileFields.AddressStreet1" name="-1_PersonProfileFields.AddressStreet1"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.AddressCity">City</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="-1_PersonProfileFields.AddressCity" name="-1_PersonProfileFields.AddressCity"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.AddressState">State</label></div>
+    <div class="iCIMS_TableCell"><select id="-1_PersonProfileFields.AddressState" name="-1_PersonProfileFields.AddressState"><option value="">— Make a Selection —</option><option value="5">California</option><option value="33">New York</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.AddressZip">Zip Code</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="-1_PersonProfileFields.AddressZip" name="-1_PersonProfileFields.AddressZip"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.AddressCountry">Country</label></div>
+    <div class="iCIMS_TableCell"><select id="-1_PersonProfileFields.AddressCountry" name="-1_PersonProfileFields.AddressCountry"><option value="">— Make a Selection —</option><option value="38">Canada</option><option value="227">United States</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="rcf3047">Are you legally eligible to work in the United States? <span class="iCIMS_Required">*</span></label></div>
+    <div class="iCIMS_TableCell"><select id="rcf3047" name="rcf3047"><option value="">— Make a Selection —</option><option value="Y">Yes</option><option value="N">No</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="rcf3048">Will you require sponsorship now or in the future? <span class="iCIMS_Required">*</span></label></div>
+    <div class="iCIMS_TableCell"><select id="rcf3048" name="rcf3048"><option value="">— Make a Selection —</option><option value="Y">Yes</option><option value="N">No</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="rcf3050">Desired Salary</label></div>
+    <div class="iCIMS_TableCell"><input type="text" id="rcf3050" name="rcf3050"></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="rcf3051">Highest level of education completed</label></div>
+    <div class="iCIMS_TableCell"><select id="rcf3051" name="rcf3051"><option value="">— Make a Selection —</option><option>High School Diploma / GED</option><option>Associate Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctorate</option></select></div>
+  </div>
+  <h3 class="iCIMS_SubHeader">Equal Employment Opportunity</h3>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.Gender">Gender</label></div>
+    <div class="iCIMS_TableCell"><select id="-1_PersonProfileFields.Gender" name="-1_PersonProfileFields.Gender"><option value="">— Make a Selection —</option><option>Male</option><option>Female</option><option>I do not wish to self-identify</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.Race">Race/Ethnicity</label></div>
+    <div class="iCIMS_TableCell"><select id="-1_PersonProfileFields.Race" name="-1_PersonProfileFields.Race"><option value="">— Make a Selection —</option><option>Asian</option><option>Black or African American</option><option>White</option><option>I do not wish to self-identify</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="-1_PersonProfileFields.Disability">Disability Status</label></div>
+    <div class="iCIMS_TableCell"><select id="-1_PersonProfileFields.Disability" name="-1_PersonProfileFields.Disability"><option value="">— Make a Selection —</option><option>Yes, I have a disability</option><option>No, I don't have a disability</option><option>I do not wish to answer</option></select></div>
+  </div>
+  <div class="iCIMS_TableRow">
+    <div class="iCIMS_TableCell iCIMS_Label"><label for="resumeUpload">Resume</label></div>
+    <div class="iCIMS_TableCell"><input type="file" id="resumeUpload" name="resume_file"></div>
+  </div>
+  <input type="submit" value="Submit" class="iCIMS_Button">
+</form>
+</body>
+</html>

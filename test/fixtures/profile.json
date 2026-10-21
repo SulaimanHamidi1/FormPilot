@@ -16,7 +16,7 @@
   "summary": "Backend engineer.",
   "coverLetter": "Dear hiring team, ...",
   "authorization": { "authorizedToWork": "Yes", "requireSponsorship": "No", "workAuthStatus": "US Citizen", "over18": "Yes", "securityClearance": "" },
-  "preferences": { "desiredTitle": "Staff Engineer", "willingToRelocate": "No", "remotePreference": "Hybrid", "salaryExpectation": "200000", "salaryCurrency": "USD", "salaryPeriod": "Yearly", "startDate": "2026-12-01", "noticePeriod": "2 weeks", "howDidYouHear": "LinkedIn", "yearsExperience": "9" },
+  "preferences": { "desiredTitle": "Staff Engineer", "willingToRelocate": "No", "remotePreference": "Hybrid", "salaryExpectation": "200000", "salaryCurrency": "USD", "salaryPeriod": "Yearly", "startDate": "2026-12-01", "noticePeriod": "2 weeks", "howDidYouHear": "LinkedIn", "yearsExperience": "9", "previouslyEmployed": "No" },
   "eeo": { "gender": "Female", "transgender": "No", "sexualOrientation": "Prefer not to say", "hispanicLatino": "No", "ethnicity": "Asian", "veteranStatus": "I am not a protected veteran", "disabilityStatus": "Prefer not to say" },
   "custom": [ { "id": "c1", "question": "Favourite data structure?", "answer": "Hash map", "updatedAt": 1 } ]
 }

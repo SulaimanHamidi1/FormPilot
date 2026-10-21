@@ -10,10 +10,18 @@
   <header class="topbar">
     <img src="../../icons/icon32.png" alt="" width="24" height="24">
     <h1>job_filler</h1>
+    <span class="muted small">Your data never leaves this device.</span>
   </header>
-  <main id="app">
-    <p>Your profile and settings will live here. All data stays on this device.</p>
-  </main>
+  <div class="layout">
+    <nav id="nav" aria-label="Sections"></nav>
+    <main id="view"></main>
+  </div>
+  <script src="../shared/schema.js"></script>
+  <script src="../shared/storage.js"></script>
+  <script src="forms.js"></script>
+  <script src="resume-extract.js"></script>
+  <script src="resume-parse.js"></script>
+  <script src="views/resume.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

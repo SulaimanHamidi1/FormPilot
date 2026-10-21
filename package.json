@@ -5,7 +5,12 @@
   "description": "Chrome extension (MV3) that auto-fills job applications from a locally stored profile.",
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
-    "icons": "node tools/make-icons.js"
+    "icons": "node tools/make-icons.js",
+    "vendor": "node tools/vendor.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "29.1.1",
+    "pdfjs-dist": "6.3.289"
+  }
 }

@@ -10,6 +10,8 @@ const CONTENT = [
   'src/content/synonyms.js',
   'src/content/detect.js',
   'src/content/match.js',
+  'src/content/fill.js',
+  'src/content/ui.js',
 ];
 
 function loadPage(file, { scripts = CONTENT, runPageScripts = true } = {}) {

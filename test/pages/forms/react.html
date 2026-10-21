@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React application form</title>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <style>
+    body { font: 14px system-ui, sans-serif; max-width: 640px; margin: 24px auto; }
+    .row { margin: 10px 0; display: flex; flex-direction: column; gap: 4px; }
+    .menu { border: 1px solid #ccc; max-height: 160px; overflow: auto; }
+    .menu [role=option] { padding: 4px 8px; cursor: pointer; }
+    pre { background: #f3f3f3; padding: 8px; }
+  </style>
+</head>
+<body>
+<h1>React form</h1>
+<div id="root"></div>
+<script>
+  const e = React.createElement;
+  const COUNTRIES = ['Canada', 'Mexico', 'United Kingdom', 'United States'];
+  const SOURCES = ['Job board', 'LinkedIn', 'Friend', 'Other'];
+
+  // react-select-like: text input with role=combobox filtering a listbox.
+  function Combo({ id, label, options, value, onChange }) {
+    const [open, setOpen] = React.useState(false);
+    const [q, setQ] = React.useState('');
+    const shown = options.filter((o) => o.toLowerCase().includes(q.toLowerCase()));
+    return e('div', { className: 'row' },
+      e('label', { htmlFor: id }, label),
+      e('div', null, value ? e('span', { 'data-testid': id + '-value' }, value + ' ') : null,
+        e('input', {
+          id, role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': open, 'aria-controls': id + '-list', value: q,
+          onChange: (ev) => { setQ(ev.target.value); setOpen(true); },
+          onKeyDown: (ev) => { if (ev.key === 'ArrowDown') setOpen(true); if (ev.key === 'Escape') setOpen(false); },
+          onMouseDown: () => setOpen(true),
+        })),
+      open ? e('div', { className: 'menu', role: 'listbox', id: id + '-list' },
+        shown.map((o) => e('div', { key: o, role: 'option', onClick: () => { onChange(o); setQ(''); setOpen(false); } }, o))) : null
+    );
+  }
+
+  // Workday-like: a button that opens a listbox.
+  function ListButton({ id, label, options, value, onChange }) {
+    const [open, setOpen] = React.useState(false);
+    return e('div', { className: 'row' },
+      e('label', { id: id + '-label' }, label),
+      e('button', { type: 'button', id, 'aria-haspopup': 'listbox', 'aria-labelledby': id + '-label', 'aria-expanded': open, onClick: () => setOpen(!open) }, value || 'Select One'),
+      open ? e('ul', { className: 'menu', role: 'listbox' },
+        options.map((o) => e('li', { key: o, role: 'option', onClick: () => { onChange(o); setOpen(false); } }, o))) : null
+    );
+  }
+
+  function App() {
+    const [s, set] = React.useState({ firstName: '', lastName: '', email: '', degree: '', sponsor: '', relocate: false, country: '', source: '', start: '' });
+    const up = (k) => (ev) => set((p) => ({ ...p, [k]: ev && ev.target ? (ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value) : ev }));
+    return e('form', { onSubmit: (ev) => { ev.preventDefault(); window.__submitted = true; } },
+      e('div', { className: 'row' }, e('label', { htmlFor: 'first' }, 'First name'), e('input', { id: 'first', value: s.firstName, onChange: up('firstName') })),
+      e('div', { className: 'row' }, e('label', { htmlFor: 'last' }, 'Last name'), e('input', { id: 'last', value: s.lastName, onChange: up('lastName') })),
+      e('div', { className: 'row' }, e('label', { htmlFor: 'email' }, 'Email'), e('input', { id: 'email', type: 'email', value: s.email, onChange: up('email') })),
+      e('div', { className: 'row' }, e('label', { htmlFor: 'start' }, 'Earliest start date'), e('input', { id: 'start', type: 'date', value: s.start, onChange: up('start') })),
+      e('div', { className: 'row' }, e('label', { htmlFor: 'degree' }, 'Highest degree'),
+        e('select', { id: 'degree', value: s.degree, onChange: up('degree') }, ['', 'High school', 'Bachelors', 'Masters', 'Doctorate'].map((o) => e('option', { key: o, value: o }, o || 'Select…')))),
+      e('fieldset', null, e('legend', null, 'Will you require visa sponsorship?'),
+        ['Yes', 'No'].map((o) => e('label', { key: o }, e('input', { type: 'radio', name: 'sponsor', value: o, checked: s.sponsor === o, onChange: up('sponsor') }), ' ' + o))),
+      e('div', { className: 'row' }, e('label', null, e('input', { type: 'checkbox', name: 'relocate', checked: s.relocate, onChange: up('relocate') }), ' I am willing to relocate')),
+      e(Combo, { id: 'country', label: 'Country', options: COUNTRIES, value: s.country, onChange: up('country') }),
+      e(ListButton, { id: 'source', label: 'How did you hear about us?', options: SOURCES, value: s.source, onChange: up('source') }),
+      e('button', { type: 'submit' }, 'Submit'),
+      e('pre', { id: 'state' }, JSON.stringify(s, null, 1))
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

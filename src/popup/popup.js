@@ -22,8 +22,10 @@ $('fill').addEventListener('click', async () => {
     showResult('Could not access this page. ' + ((res && res.error) || ''), 'warn');
     return;
   }
-  const filled = res.frames.reduce((n, f) => n + (f.filled || 0), 0);
-  showResult(`Filled ${filled} field${filled === 1 ? '' : 's'}.`, filled ? 'ok' : 'warn');
+  const s = res.summary;
+  let text = `Filled ${s.filled} field${s.filled === 1 ? '' : 's'}`;
+  if (s.unknown.length) text += `, ${s.unknown.length} need${s.unknown.length === 1 ? 's' : ''} your answer (see the page)`;
+  showResult(text + '.', s.filled && !s.unknown.length ? 'ok' : 'warn');
 });
 
 chrome.commands.getAll((cmds) => {
@@ -31,4 +33,14 @@ chrome.commands.getAll((cmds) => {
   $('shortcut').textContent = (c && c.shortcut) || 'not set';
 });
 
-$('profile-status').textContent = 'Ready.';
+chrome.storage.local.get(['profile', 'resume']).then(({ profile, resume }) => {
+  const p = profile && profile.personal;
+  const name = p && [p.firstName, p.lastName].filter(Boolean).join(' ');
+  const status = $('profile-status');
+  if (!name && !(p && p.email)) {
+    status.textContent = 'No profile yet. Set one up first.';
+    $('fill').disabled = true;
+    return;
+  }
+  status.textContent = `Filling as ${name || p.email}${resume ? ' · resume attached' : ' · no resume saved'}`;
+});

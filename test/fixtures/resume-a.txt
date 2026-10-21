@@ -1,0 +1,23 @@
+JANE A. DOE
+San Francisco, CA 94105 | (415) 555-0134 | jane.doe@example.com
+linkedin.com/in/janedoe | github.com/janedoe | janedoe.dev
+
+SUMMARY
+Backend engineer with 7 years building payment systems.
+
+EXPERIENCE
+Senior Software Engineer | Stripe | Jan 2021 – Present
+• Led migration of ledger service to Go, cutting p99 latency by 40%.
+• Mentored 4 engineers.
+Acme Corp — New York, NY
+Software Engineer   Jun 2017 - Dec 2020
+• Built billing APIs in Python.
+
+EDUCATION
+University of California, Berkeley
+B.S. in Computer Science, 2013 – 2017
+GPA: 3.8/4.0
+
+SKILLS
+Languages: Go, Python, TypeScript, SQL
+Tools: Kubernetes, Postgres, Kafka

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Options harness</title>
+  <script src="chrome-shim.js"></script>
+</head>
+<body>
+  <script>
+    // Loads the real options page (markup, styles, scripts in order) with the
+    // chrome.* shim in place, so it stays in sync with src/options/options.html.
+    (async () => {
+      const base = new URL('../../src/options/', location.href);
+      const html = await (await fetch(new URL('options.html', base))).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      for (const link of doc.querySelectorAll('link[rel=stylesheet]')) {
+        document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: new URL(link.getAttribute('href'), base).href }));
+      }
+      const scripts = [...doc.querySelectorAll('script[src]')].map((s) => new URL(s.getAttribute('src'), base).href);
+      doc.querySelectorAll('script').forEach((s) => s.remove());
+      doc.querySelectorAll('img[src]').forEach((i) => i.setAttribute('src', new URL(i.getAttribute('src'), base).href));
+      document.body.replaceChildren(...doc.body.childNodes);
+      for (const src of scripts) {
+        await new Promise((resolve, reject) => {
+          const el = Object.assign(document.createElement('script'), { src, onload: resolve, onerror: reject });
+          document.body.append(el);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

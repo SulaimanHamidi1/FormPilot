@@ -1,0 +1,53 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 1084 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 50 760 Tm (JANE A. DOE) Tj
+1 0 0 1 50 746 Tm (San Francisco, CA 94105 | (415) 555-0134 | jane.doe@example.com) Tj
+1 0 0 1 50 732 Tm (linkedin.com/in/janedoe | github.com/janedoe | janedoe.dev) Tj
+1 0 0 1 50 704 Tm (SUMMARY) Tj
+1 0 0 1 50 690 Tm (Backend engineer with 7 years building payment systems.) Tj
+1 0 0 1 50 662 Tm (EXPERIENCE) Tj
+1 0 0 1 50 648 Tm (Senior Software Engineer | Stripe | Jan 2021 – Present) Tj
+1 0 0 1 50 634 Tm (• Led migration of ledger service to Go, cutting p99 latency by 40%.) Tj
+1 0 0 1 50 620 Tm (• Mentored 4 engineers.) Tj
+1 0 0 1 50 606 Tm (Acme Corp — New York, NY) Tj
+1 0 0 1 50 592 Tm (Software Engineer   Jun 2017 - Dec 2020) Tj
+1 0 0 1 50 578 Tm (• Built billing APIs in Python.) Tj
+1 0 0 1 50 550 Tm (EDUCATION) Tj
+1 0 0 1 50 536 Tm (University of California, Berkeley) Tj
+1 0 0 1 50 522 Tm (B.S. in Computer Science, 2013 – 2017) Tj
+1 0 0 1 50 508 Tm (GPA: 3.8/4.0) Tj
+1 0 0 1 50 480 Tm (SKILLS) Tj
+1 0 0 1 50 466 Tm (Languages: Go, Python, TypeScript, SQL) Tj
+1 0 0 1 50 452 Tm (Tools: Kubernetes, Postgres, Kafka) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000338 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1474
+%%EOF

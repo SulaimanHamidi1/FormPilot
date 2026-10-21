@@ -1,0 +1,19 @@
+John Smith
+john.smith@mail.com  +44 7700 900123  London, United Kingdom
+
+Professional Experience
+Product Designer at Figma
+March 2019 to Present
+Designed collaborative editing features.
+Junior Designer
+Pixel Labs Ltd
+08/2016 - 02/2019
+- Shipped onboarding redesign.
+
+Education
+Master of Arts in Interaction Design - Royal College of Art (2016)
+Bachelor's Degree, Graphic Design
+University of the Arts London, 2011 - 2014
+
+Technical Skills
+Figma, Sketch, Prototyping, User Research

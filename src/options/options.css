@@ -147,3 +147,12 @@ button.link { background: none; border: 0; padding: 2px 6px; color: var(--accent
 }
 .step.done { border-color: var(--accent); color: var(--accent); }
 .step.current { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.toolbar input[type="search"] { flex: 1; }
+.qa { display: flex; flex-direction: column; gap: 8px; }
+.qa-foot { display: flex; align-items: center; }
+.setting { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.setting:last-of-type { border-bottom: 0; }
+.setting p { margin: 2px 0 0 24px; }
+ul.ignored { margin: 0; padding-left: 18px; color: var(--muted); }
+.danger-zone { border-color: var(--danger); }

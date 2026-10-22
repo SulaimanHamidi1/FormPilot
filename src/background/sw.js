@@ -10,6 +10,7 @@ const CONTENT_FILES = [
   'src/content/detect.js',
   'src/content/match.js',
   'src/content/fill.js',
+  'src/content/expand.js',
   'src/content/ui.js',
   'src/content/main.js',
   'src/content/prompt.js',

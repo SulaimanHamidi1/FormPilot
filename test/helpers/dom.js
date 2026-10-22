@@ -11,6 +11,7 @@ const CONTENT = [
   'src/content/detect.js',
   'src/content/match.js',
   'src/content/fill.js',
+  'src/content/expand.js',
   'src/content/ui.js',
 ];
 

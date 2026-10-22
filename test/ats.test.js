@@ -157,3 +157,24 @@ test('iCIMS frame: profile fields, eligibility selects, EEO', async () => {
   assert.strictEqual(v('-1_PersonProfileFields.Disability'), 'I do not wish to answer');
   assert.strictEqual(res.unknown.length, 1, res.unknown.map((u) => u.question).join(' | '));
 });
+
+test('Workday My Experience: clicks Add per job and school, picks each skill, skips header', async () => {
+  const { w, d } = await page('test/pages/forms/workday-add.html');
+  const res = await w.JF.run();
+  const blocks = (kind) => [...d.querySelectorAll(`[data-automation-id^="${kind}-"]`)];
+  const work = blocks('workExperience');
+  assert.strictEqual(work.length, 2, 'one block per job');
+  assert.strictEqual(work[0].querySelector('[data-automation-id=company]').value, 'Stripe');
+  assert.strictEqual(work[0].querySelector('[data-automation-id=jobTitle]').value, 'Senior Software Engineer');
+  assert.strictEqual(work[1].querySelector('[data-automation-id=company]').value, 'Acme Corp');
+  const edu = blocks('education');
+  assert.strictEqual(edu.length, 1, 'one block per school');
+  assert.strictEqual(edu[0].querySelector('[data-automation-id=school]').value, 'University of California, Berkeley');
+  assert.strictEqual(blocks('certification').length, 0, 'sections without profile data are left alone');
+  assert.strictEqual(blocks('language').length, 0);
+  const pills = [...d.querySelectorAll('.pill')].map((p) => p.textContent);
+  assert.deepStrictEqual(pills, ['Go (Programming Language)', 'Python (Programming Language)', 'SQL']);
+  assert.strictEqual(d.querySelector('[data-automation-id=utilityButtonLanguage]').textContent, 'English');
+  assert.ok(!res.unknown.some((u) => /english/i.test(u.question)), 'header language picker is not a question');
+  assert.strictEqual(d.body.dataset.submitted, undefined, 'never submits');
+});

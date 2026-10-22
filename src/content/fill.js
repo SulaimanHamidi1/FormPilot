@@ -380,6 +380,31 @@
     return false;
   }
 
+  // Multi-select search (Workday skills): search and pick each item in turn.
+  // Items the site doesn't offer are skipped.
+  async function fillMultiCombobox(field, items) {
+    const el = field.el;
+    const searchOnEnter = el.getAttribute('data-automation-id') === 'searchBox';
+    let picked = 0;
+    for (const item of items.slice(0, 20)) {
+      el.focus({ preventScroll: true });
+      setValue(el, item);
+      el.focus({ preventScroll: true });
+      if (searchOnEnter) fire(el, 'keydown', { key: 'Enter', code: 'Enter', keyCode: 13 });
+      const opts = await waitForOptions(el, searchOnEnter ? 1500 : 1000);
+      const opt = JF.match.pickOption(opts, item);
+      if (opt) {
+        clickEl(opt.el);
+        picked++;
+        await sleep(120);
+      } else {
+        setValue(el, '');
+        closeMenu(el);
+      }
+    }
+    return picked > 0;
+  }
+
   // Button that opens a listbox (Workday-style dropdowns).
   async function fillListbox(field, value) {
     const el = field.el;
@@ -450,7 +475,9 @@
           ok = await fillFile(field, key, ctx);
           break;
         case 'combobox':
-          ok = await fillCombobox(field, value);
+          ok = key === 'skills' && ctx.profile && ctx.profile.skills.length > 1
+            ? await fillMultiCombobox(field, ctx.profile.skills)
+            : await fillCombobox(field, value);
           break;
         case 'listbox':
           ok = await fillListbox(field, value);
@@ -480,5 +507,5 @@
     return result;
   }
 
-  JF.fill = { fillAll, fillOne, setValue, formatDate, formatValue, highlight, clearHighlights, hasValue, FILLED_ATTR, WARN_COLOR, OK_COLOR };
+  JF.fill = { fillAll, fillOne, follow, click: clickEl, setValue, formatDate, formatValue, highlight, clearHighlights, hasValue, FILLED_ATTR, WARN_COLOR, OK_COLOR };
 })();

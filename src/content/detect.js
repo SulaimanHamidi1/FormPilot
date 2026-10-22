@@ -178,6 +178,8 @@
 
   function usable(el, kind) {
     if (el.disabled || el.closest('[' + HOST_ATTR + ']')) return false;
+    // Site chrome, e.g. Workday's language picker in the page header.
+    if (el.closest('header, nav, footer, [role=banner], [role=navigation], [role=contentinfo]')) return false;
     if (el.readOnly && kind !== 'combobox' && kind !== 'date') return false;
     // Upload inputs hide inside drop zones; styled radios/checkboxes hide
     // behind their labels. A hidden checkbox with no visible label is

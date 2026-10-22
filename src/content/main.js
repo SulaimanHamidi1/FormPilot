@@ -52,6 +52,10 @@
     const seen = new Set();
     const counts = { filled: 0, kept: 0, failed: 0 };
     pending.clear();
+    // Click "Add" in empty work/education sections so there are blocks to fill.
+    if (settings.expandLists) {
+      await JF.expand.run(await JF.storage.getProfile(), { follow: settings.followFill }).catch((e) => console.warn('job_filler:', e));
+    }
     // Two passes: answers can reveal follow-up fields (e.g. country -> state).
     for (let pass = 0; pass < 2; pass++) {
       const { profile, matches } = await analyze();

@@ -12,6 +12,7 @@
     ignored: [],
     watchMultiStep: true,
     followFill: true,
+    expandLists: true,
     launcher: 'off', // on-page button: 'off' | 'jobsites' | 'all'
   };
   const EXPORT_FORMAT = 'job_filler-backup';

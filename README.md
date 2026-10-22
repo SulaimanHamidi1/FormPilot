@@ -79,7 +79,7 @@ matching. It has been tuned against:
 | Lever | Card questions, checkbox groups, location autocomplete, EEO section |
 | Ashby | Yes/No toggle buttons, location autocomplete; skips Ashby's own "autofill from resume" uploader |
 | SmartRecruiters | Fields inside open shadow roots (`spl-*` web components) |
-| Workday | Listbox buttons, search prompts, split Month/Year dates, numbered work/education blocks, step-by-step flow |
+| Workday | Listbox buttons, search prompts, split Month/Year dates, numbered work/education blocks, step-by-step flow; clicks **Add** in empty Work Experience/Education sections once per job and school, and picks each skill in the skills search |
 | iCIMS | Forms inside the same-origin `icims_content_iframe` |
 
 Consent checkboxes, legal attestations, CAPTCHAs and passwords are never
@@ -143,6 +143,7 @@ src/content/             content scripts (injected only when you fill)
   detect.js              single-pass field detection (labels, groups, shadow DOM, sections)
   match.js               scoring, saved-answer fuzzy matching, option picking
   fill.js                framework-safe value setting, dropdowns, uploads, highlighting
+  expand.js              clicks "Add" in empty work/education sections
   ui.js, prompt.js       on-page toast and unknown-question panel (isolated shadow root)
   main.js                entry point, multi-step watcher
   launcher.js            optional on-page logo button (the only script that runs on its own)

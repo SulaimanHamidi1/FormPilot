@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workday-style My Experience (Add buttons)</title>
+<style>
+  body { font: 14px system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 0 20px 40px; }
+  header { display: flex; justify-content: flex-end; padding: 8px 0; border-bottom: 1px solid #ddd; }
+  section { border-bottom: 1px solid #ddd; padding: 16px 0; }
+  .row { margin: 10px 0; }
+  label { display: block; font-weight: 600; }
+  [role=group] { border-left: 3px solid #eee; padding-left: 12px; margin: 12px 0; }
+  .pill { display: inline-block; background: #eef; border-radius: 10px; padding: 2px 8px; margin: 2px; }
+</style>
+</head>
+<body>
+<!-- Mirrors Workday's "My Experience" step: repeating sections start empty
+     with an Add button; skills are a search-and-pick multiselect. -->
+<header data-automation-id="header">
+  <button type="button" aria-haspopup="listbox" data-automation-id="utilityButtonLanguage" data-options="English|Deutsch|Français">English</button>
+</header>
+<h2>My Experience</h2>
+<form onsubmit="event.preventDefault(); document.body.dataset.submitted = '1'">
+  <section role="group" aria-labelledby="work-h" data-automation-id="workExperienceSection" data-kind="workExperience">
+    <h3 id="work-h">Work Experience</h3>
+    <p>Please add your work experience here. If this is included in your resume, this section can be skipped.</p>
+    <div class="items"></div>
+    <button type="button" data-automation-id="add-button" aria-label="Add Work Experience">Add</button>
+  </section>
+  <section role="group" aria-labelledby="edu-h" data-automation-id="educationSection" data-kind="education">
+    <h3 id="edu-h">Education</h3>
+    <p>Please add your education here. You may include up to 3 of the most relevant schools or programs you have attended (optional).</p>
+    <div class="items"></div>
+    <button type="button" data-automation-id="add-button" aria-label="Add Education">Add</button>
+  </section>
+  <section role="group" aria-labelledby="cert-h" data-automation-id="certificationSection" data-kind="certification">
+    <h3 id="cert-h">Certifications</h3>
+    <p>Please add your certifications here (optional).</p>
+    <div class="items"></div>
+    <button type="button" data-automation-id="add-button" aria-label="Add Certifications">Add</button>
+  </section>
+  <section role="group" aria-labelledby="lang-h" data-automation-id="languageSection" data-kind="language">
+    <h3 id="lang-h">Languages</h3>
+    <p>Please add your preferred language here (optional).</p>
+    <div class="items"></div>
+    <button type="button" data-automation-id="add-button" aria-label="Add Languages">Add</button>
+  </section>
+  <section data-automation-id="skillsSection">
+    <h3>Skills</h3>
+    <p>Please add your skills here (optional).</p>
+    <label for="skills-input">Type to Add Skills</label>
+    <div data-automation-id="multiSelectContainer">
+      <div data-automation-id="selectedItemList"></div>
+      <input type="text" id="skills-input" data-automation-id="searchBox" placeholder="Search">
+    </div>
+  </section>
+  <button>Save and Continue</button>
+</form>
+
+<script>
+  const SKILLS = ['Go (Programming Language)', 'Python (Programming Language)', 'SQL', 'PostgreSQL', 'Java', 'JavaScript'];
+  const counters = {};
+  let uid = 100;
+
+  const BLOCKS = {
+    workExperience: (n) => `
+      <h4>Work Experience ${n}</h4>
+      <div class="row"><label for="i${++uid}">Job Title*</label><input type="text" id="i${uid}" data-automation-id="jobTitle"></div>
+      <div class="row"><label for="i${++uid}">Company*</label><input type="text" id="i${uid}" data-automation-id="company"></div>
+      <div class="row"><label for="i${++uid}">Location</label><input type="text" id="i${uid}" data-automation-id="location"></div>
+      <div class="row"><label for="i${++uid}">Role Description</label><textarea id="i${uid}" data-automation-id="description"></textarea></div>`,
+    education: (n) => `
+      <h4>Education ${n}</h4>
+      <div class="row"><label for="i${++uid}">School or University*</label><input type="text" id="i${uid}" data-automation-id="school"></div>
+      <div class="row"><label for="i${++uid}">Field of Study</label><input type="text" id="i${uid}" data-automation-id="fieldOfStudy"></div>`,
+    certification: (n) => `
+      <h4>Certifications ${n}</h4>
+      <div class="row"><label for="i${++uid}">Certification</label><input type="text" id="i${uid}" data-automation-id="certification"></div>`,
+    language: (n) => `
+      <h4>Languages ${n}</h4>
+      <div class="row"><label for="i${++uid}">Language*</label><input type="text" id="i${uid}" data-automation-id="language"></div>`,
+  };
+
+  for (const section of document.querySelectorAll('section[data-kind]')) {
+    const kind = section.dataset.kind;
+    const btn = section.querySelector('[data-automation-id=add-button]');
+    btn.addEventListener('click', () => {
+      // Workday renders the new block a moment later.
+      setTimeout(() => {
+        const n = (counters[kind] = (counters[kind] || 0) + 1);
+        const div = document.createElement('div');
+        div.setAttribute('role', 'group');
+        div.setAttribute('data-automation-id', `${kind}-${n}`);
+        div.innerHTML = BLOCKS[kind](n);
+        section.querySelector('.items').append(div);
+        btn.textContent = 'Add Another';
+        btn.setAttribute('aria-label', btn.getAttribute('aria-label').replace(/^Add( Another)?/, 'Add Another'));
+      }, 120);
+    });
+  }
+
+  // Skills: results only after Enter; picking one adds a pill and clears the box.
+  const box = document.getElementById('skills-input');
+  const clear = () => document.querySelectorAll('[data-automation-id=promptOption]').forEach((x) => x.remove());
+  box.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    clear();
+    const q = box.value.toLowerCase().trim();
+    for (const s of SKILLS.filter((s) => q && s.toLowerCase().includes(q))) {
+      const d = document.createElement('div');
+      d.setAttribute('data-automation-id', 'promptOption');
+      d.setAttribute('role', 'option');
+      d.textContent = s;
+      d.addEventListener('click', () => {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = s;
+        document.querySelector('[data-automation-id=selectedItemList]').append(pill);
+        box.value = '';
+        clear();
+      });
+      box.after(d);
+    }
+  });
+  // Like Workday, text that wasn't picked from the list doesn't stick.
+  box.addEventListener('blur', () => setTimeout(() => { if (!document.querySelector('[data-automation-id=promptOption]')) box.value = ''; }, 0));
+
+  // Header language picker.
+  const lang = document.querySelector('[data-automation-id=utilityButtonLanguage]');
+  lang.addEventListener('click', () => {
+    const ul = document.createElement('ul');
+    ul.setAttribute('role', 'listbox');
+    for (const o of lang.dataset.options.split('|')) {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = o;
+      li.addEventListener('click', () => { lang.textContent = o; ul.remove(); });
+      ul.append(li);
+    }
+    lang.after(ul);
+  });
+</script>
+</body>
+</html>

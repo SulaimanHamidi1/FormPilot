@@ -64,6 +64,7 @@
       h('h3', {}, 'Filling'),
       toggle('Highlight filled fields', 'Green outline on fields job_filler filled, amber on questions that need you.', settings.highlight, set('highlight')),
       toggle('Scroll to each field as it\'s filled', 'Follow along on the page while job_filler fills it. Turn off to fill without moving the page.', settings.followFill, set('followFill')),
+      toggle('Add work and education entries', 'When a section starts with an "Add" button (common on Workday), click it once for each job and school in your profile.', settings.expandLists, set('expandLists')),
       toggle('Ask about unknown questions', 'Show the on-page panel to answer and save questions job_filler couldn\'t answer.', settings.askUnknown, set('askUnknown')),
       toggle('Replace values already in the form', 'Off by default: anything you or the site already entered is left alone.', settings.overwrite, set('overwrite')),
       toggle('Continue through multi-step applications', 'On Workday, iCIMS, Taleo and similar sites, fill each new step automatically after you start.', settings.watchMultiStep, set('watchMultiStep')),

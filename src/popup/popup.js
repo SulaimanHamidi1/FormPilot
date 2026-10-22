@@ -17,15 +17,13 @@ $('fill').addEventListener('click', async () => {
   if (!tab) return;
   $('fill').disabled = true;
   const res = await chrome.runtime.sendMessage({ type: 'fill', tabId: tab.id });
-  $('fill').disabled = false;
   if (!res || !res.ok) {
-    showResult('Could not access this page. ' + ((res && res.error) || ''), 'warn');
+    $('fill').disabled = false;
+    showResult('job_filler can\'t run on this page. ' + ((res && res.error) || ''), 'warn');
     return;
   }
-  const s = res.summary;
-  let text = `Filled ${s.filled} field${s.filled === 1 ? '' : 's'}`;
-  if (s.unknown.length) text += `, ${s.unknown.length} need${s.unknown.length === 1 ? 's' : ''} your answer (see the page)`;
-  showResult(text + '.', s.filled && !s.unknown.length ? 'ok' : 'warn');
+  // Results appear on the page itself.
+  window.close();
 });
 
 chrome.commands.getAll((cmds) => {

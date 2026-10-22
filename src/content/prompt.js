@@ -162,8 +162,9 @@
   }
 
   const baseSummary = JF.showSummary;
-  JF.showSummary = (s) => {
-    if (s.unknown && s.unknown.length) show(s);
+  JF.showSummary = async (s) => {
+    const settings = await JF.storage.getSettings();
+    if (s.unknown && s.unknown.length && settings.askUnknown) show(s);
     else if (baseSummary) baseSummary(s);
   };
 

@@ -82,8 +82,13 @@ chrome.commands.onCommand.addListener(async (command, tab) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg) return false;
   if (msg.type === 'fill') {
-    fillTab(msg.tabId)
-      .then((summary) => sendResponse({ ok: true, summary }))
+    // Answer once injection works so the popup can close and hand focus
+    // back to the page (dropdown widgets only open in a focused page).
+    ensureInjected(msg.tabId)
+      .then(() => {
+        sendResponse({ ok: true });
+        return fillTab(msg.tabId);
+      })
       .catch((e) => sendResponse({ ok: false, error: String(e.message || e) }));
     return true;
   }

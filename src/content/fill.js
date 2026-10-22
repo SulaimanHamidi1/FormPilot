@@ -9,6 +9,55 @@
   const WARN_COLOR = '#d97706';
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  // ---- Following along ----
+
+  const MARGIN = 80;
+  const reducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // The nearest box the user can see: hidden file inputs and styled radios
+  // sit inside a visible wrapper.
+  function anchorOf(el) {
+    for (let n = el, i = 0; n && n.nodeType === 1 && i < 5; n = n.parentElement || (n.getRootNode() && n.getRootNode().host), i++) {
+      const r = n.getBoundingClientRect();
+      if (r.width || r.height) return { el: n, rect: r };
+    }
+    return null;
+  }
+
+  function scrollEnd(ms) {
+    return new Promise((resolve) => {
+      const done = () => {
+        clearTimeout(timer);
+        document.removeEventListener('scrollend', done, true);
+        resolve();
+      };
+      const timer = setTimeout(done, ms);
+      document.addEventListener('scrollend', done, true);
+    });
+  }
+
+  // Scroll the field about to be filled into view so the user can follow.
+  // Fields already on screen are filled without moving or waiting.
+  async function follow(el) {
+    const a = anchorOf(el);
+    if (!a || !a.el.scrollIntoView) return;
+    if (window !== window.top) {
+      // Can't see the parent page's viewport from a frame; let Chrome scroll
+      // the frame and its ancestors only as far as needed.
+      a.el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      return;
+    }
+    const inView = (r) => r.top >= MARGIN && r.bottom <= window.innerHeight - MARGIN;
+    if (inView(a.rect)) return;
+    if (!reducedMotion()) {
+      a.el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      await scrollEnd(400);
+      if (inView(a.el.getBoundingClientRect())) return;
+    }
+    // Smooth scrolling was cut short (or isn't wanted): jump there instead.
+    a.el.scrollIntoView({ block: 'center', inline: 'nearest' });
+  }
+
   // ---- Low-level setters ----
 
   function nativeSetter(el) {
@@ -371,6 +420,7 @@
     const ours = field.el.getAttribute(FILLED_ATTR) === '1';
     if (field.kind !== 'file' && (value === '' || value == null)) return 'empty';
     if (hasValue(field) && !ours && !ctx.settings.overwrite) return 'kept';
+    if (ctx.settings.followFill) await follow(field.el).catch(() => {});
     let ok = false;
     try {
       switch (field.kind) {

@@ -34,7 +34,8 @@ extension's card in `chrome://extensions`.
 2. **Open a job application** and press **Alt+Shift+J**, or click the toolbar
    icon and then **Fill this page**. You can change the shortcut at
    `chrome://extensions/shortcuts`.
-3. Filled fields get a green outline. Questions job_filler couldn't answer get an
+3. The page scrolls to each field as it's filled so you can follow along
+   (turn this off in **Settings & backup**). Filled fields get a green outline. Questions job_filler couldn't answer get an
    amber outline and appear in a small panel in the corner. Answer them there and
    they're filled in and saved for next time. **Skip** ignores a question once;
    **Don't ask** ignores it for good.

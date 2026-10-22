@@ -11,6 +11,7 @@
     overwrite: false,
     ignored: [],
     watchMultiStep: true,
+    launcher: 'off', // on-page button: 'off' | 'jobsites' | 'all'
   };
   const EXPORT_FORMAT = 'job_filler-backup';
   const MAX_RESUME_BYTES = 5 * 1024 * 1024;

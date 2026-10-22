@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "job_filler",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Auto-fill job applications from a profile stored only on your device.",
   "permissions": [
     "storage",
@@ -9,7 +9,24 @@
     "scripting"
   ],
   "optional_host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "*://*.greenhouse.io/*",
+    "*://*.lever.co/*",
+    "*://*.ashbyhq.com/*",
+    "*://*.myworkdayjobs.com/*",
+    "*://*.myworkdaysite.com/*",
+    "*://*.smartrecruiters.com/*",
+    "*://*.icims.com/*",
+    "*://*.jobvite.com/*",
+    "*://*.workable.com/*",
+    "*://*.bamboohr.com/*",
+    "*://*.taleo.net/*",
+    "*://*.successfactors.com/*",
+    "*://*.successfactors.eu/*",
+    "*://*.breezy.hr/*",
+    "*://*.recruitee.com/*",
+    "*://*.teamtailor.com/*",
+    "*://*.applytojob.com/*"
   ],
   "background": {
     "service_worker": "src/background/sw.js"

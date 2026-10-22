@@ -1,5 +1,6 @@
-// Background service worker: injects the content scripts on demand (popup
-// button or keyboard shortcut). Nothing runs on pages until the user asks.
+// Background service worker: injects the content scripts on demand (popup,
+// keyboard shortcut or the on-page button). The only script that runs on its
+// own is the small launcher button, and only if the user turns it on.
 
 const CONTENT_FILES = [
   'src/shared/schema.js',
@@ -84,10 +85,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'fill') {
     // Answer once injection works so the popup can close and hand focus
     // back to the page (dropdown widgets only open in a focused page).
-    ensureInjected(msg.tabId)
+    const tabId = msg.tabId != null ? msg.tabId : sender.tab && sender.tab.id;
+    if (tabId == null) return false;
+    ensureInjected(tabId)
       .then(() => {
         sendResponse({ ok: true });
-        return fillTab(msg.tabId);
+        return fillTab(tabId);
       })
       .catch((e) => sendResponse({ ok: false, error: String(e.message || e) }));
     return true;
@@ -105,6 +108,42 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return false;
 });
 
+// ---- On-page launcher button ----
+
+const LAUNCHER_ID = 'jf-launcher';
+// The ATS domains listed as optional host permissions in the manifest.
+const JOB_SITES = chrome.runtime.getManifest().optional_host_permissions.filter((o) => o !== '<all_urls>');
+
+// Register the launcher for the sites the user chose, if Chrome allows it.
+async function syncLauncher() {
+  const { settings } = await chrome.storage.local.get('settings');
+  const mode = (settings && settings.launcher) || 'off';
+  const matches = mode === 'all' ? ['<all_urls>'] : mode === 'jobsites' ? JOB_SITES : [];
+  const allowed = matches.length && (await chrome.permissions.contains({ origins: matches }));
+  const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [LAUNCHER_ID] });
+  if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: [LAUNCHER_ID] });
+  if (!allowed) return;
+  await chrome.scripting.registerContentScripts([{
+    id: LAUNCHER_ID,
+    matches,
+    js: ['src/content/launcher.js'],
+    runAt: 'document_idle',
+    allFrames: false,
+  }]);
+}
+
+let syncing = Promise.resolve();
+const resync = () => {
+  syncing = syncing.then(syncLauncher).catch((e) => console.warn('job_filler launcher:', e));
+};
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && 'settings' in changes) resync();
+});
+chrome.permissions.onAdded.addListener(resync);
+chrome.permissions.onRemoved.addListener(resync);
+
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') chrome.runtime.openOptionsPage();
+  resync();
 });

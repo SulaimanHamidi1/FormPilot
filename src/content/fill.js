@@ -166,11 +166,28 @@
 
   // Location/city inputs often show suggestions that must be picked for the
   // value to stick (Lever, Google Places). Pick the best one if any appear.
+  const SUGGEST_SEL = '.dropdown-results .dropdown-location, .pac-container .pac-item';
+  const SUGGEST_HINT = /dropdown|autocomplete|suggest|results|typeahead|places/i;
+
+  function suggestions(el) {
+    const opts = visibleOptions(el);
+    for (const s of document.querySelectorAll(SUGGEST_SEL)) {
+      if (JF.detect.isVisible(s)) opts.push({ text: JF.detect.textOf(s), value: '', el: s });
+    }
+    return opts;
+  }
+
   async function pickSuggestion(field, value) {
-    await sleep(450);
-    const opts = visibleOptions(field.el);
-    for (const el of document.querySelectorAll('.dropdown-results .dropdown-location, .pac-container .pac-item')) {
-      if (JF.detect.isVisible(el)) opts.push({ text: JF.detect.textOf(el), value: '', el });
+    const el = field.el;
+    const parent = el.parentElement;
+    const looksLikeAutocomplete = el.hasAttribute('aria-autocomplete') || el.hasAttribute('aria-haspopup') || el.hasAttribute('list') ||
+      el.getAttribute('autocomplete') === 'off' || (parent && [...parent.children].some((c) => c !== el && SUGGEST_HINT.test(c.className)));
+    if (!looksLikeAutocomplete) return;
+    // Suggestions often come from the network; give them up to ~0.8s.
+    let opts = [];
+    for (let i = 0; i < 8 && !opts.length; i++) {
+      await sleep(100);
+      opts = suggestions(el);
     }
     if (!opts.length) return;
     const opt = JF.match.pickOption(opts, value) || opts[0];
@@ -277,6 +294,13 @@
     clickEl(el);
     fire(el, 'keydown', { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 });
     let opts = await waitForOptions(el, 500);
+    if (!opts.length && !document.hasFocus()) {
+      // focus() fires no events in a background window; announce it ourselves.
+      fire(el, 'focus');
+      fire(el, 'focusin');
+      clickEl(el);
+      opts = await waitForOptions(el, 400);
+    }
     let opt = JF.match.pickOption(opts, value);
     if (!opt) {
       // Type to search; long canonical answers search better by first words.

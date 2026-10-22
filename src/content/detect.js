@@ -9,7 +9,7 @@
   const TEXT_SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'SELECT', 'OPTION', 'TEXTAREA', 'INPUT', 'SVG', 'TEMPLATE']);
   const HOST_ATTR = 'data-jf-ui';
   const SECTION_RE = /(work|employment|experience|position|job|education|school)[a-z]*?[\W_]{0,3}(\d+)/i;
-  const HEAD_SEL = ':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > legend, :scope > div > h2, :scope > div > h3, :scope > div > h4';
+  const HEAD_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'LEGEND']);
   const SECTION_TEXT = {
     work: /\b(work|employment|professional|job)\s+(experience|history)\b|^(work\s+)?experience$|^employment$/i,
     education: /^education\b|\beducation(al)?\s+(history|background)\b/i,
@@ -129,11 +129,14 @@
         const word = m[1].toLowerCase();
         return { section: word === 'education' || word === 'school' ? 'education' : 'work', index: Number(m[2]) };
       }
-      // The closest heading before the field decides its section.
-      const heads = node.querySelectorAll(HEAD_SEL);
+      // The closest heading before the field decides its section. Only the
+      // children (and div grandchildren) before the field's branch are
+      // checked, so this stays cheap on large pages.
       let head = null;
-      for (const hd of heads) {
-        if (!hd.contains(el) && hd.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) head = hd;
+      for (const c of node.children) {
+        if (c.contains(el)) break;
+        if (HEAD_TAGS.has(c.tagName)) head = c;
+        else if (c.tagName === 'DIV') for (const g of c.children) if (HEAD_TAGS.has(g.tagName) && g.tagName !== 'H1' && g.tagName !== 'LEGEND') head = g;
       }
       if (head) {
         const t = clean(head.textContent);

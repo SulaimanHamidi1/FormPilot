@@ -26,6 +26,15 @@ $('fill').addEventListener('click', async () => {
   window.close();
 });
 
+$('launcher-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: chrome.runtime.getURL('src/options/options.html#settings') });
+});
+
+chrome.storage.local.get('settings').then(({ settings }) => {
+  $('launcher-tip').hidden = !!(settings && settings.launcher && settings.launcher !== 'off');
+});
+
 chrome.commands.getAll((cmds) => {
   const c = cmds.find((x) => x.name === 'fill-form');
   $('shortcut').textContent = (c && c.shortcut) || 'not set';

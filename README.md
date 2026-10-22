@@ -40,6 +40,17 @@ extension's card in `chrome://extensions`.
    **Don't ask** ignores it for good.
 4. Check everything, then submit yourself.
 
+### On-page button
+
+Turn on **Settings & backup → On-page button** to show the job_filler logo on the
+right edge of pages that look like a job application. Click it to fill the
+form; hover and click **×** to stop showing it on that site. Choose **On job
+application sites** (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, iCIMS
+and similar) or **On any site with an application form**; Chrome asks for access
+to those sites when you turn it on. The button script is about 8 KB and only
+looks for name, email, phone and resume fields; the filler still loads only when
+you click.
+
 On multi-step applications (Workday, iCIMS, Taleo, SuccessFactors, Jobvite),
 each new step is filled automatically after your first fill. Turn this off in
 **Settings & backup**.
@@ -79,8 +90,11 @@ you to sign in yourself.
 - `storage`: saves your profile locally.
 - `activeTab` + `scripting`: injects the filler into the current tab only when
   you press Fill or the shortcut. Nothing runs on pages otherwise.
-- `<all_urls>` (optional, off by default): only needed for application forms
-  embedded in an iframe from another domain. Turn it on in **Settings & backup**.
+- `<all_urls>` (optional, off by default): needed for application forms
+  embedded in an iframe from another domain, or for the on-page button on all
+  sites. Turn it on in **Settings & backup**.
+- Job site domains (optional, off by default): only requested when you show the
+  on-page button on job application sites.
 
 ## Performance
 
@@ -130,6 +144,7 @@ src/content/             content scripts (injected only when you fill)
   fill.js                framework-safe value setting, dropdowns, uploads, highlighting
   ui.js, prompt.js       on-page toast and unknown-question panel (isolated shadow root)
   main.js                entry point, multi-step watcher
+  launcher.js            optional on-page logo button (the only script that runs on its own)
 src/options/             settings page: onboarding, resume import, profile, saved answers, backup
 src/popup/               toolbar popup
 src/shared/              profile schema, storage helpers, text utilities

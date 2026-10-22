@@ -4,6 +4,12 @@
   JF.views = JF.views || {};
   const { h, toast } = JF.forms;
   const ALL_SITES = { origins: ['<all_urls>'] };
+  const JOB_SITES = { origins: chrome.runtime.getManifest().optional_host_permissions.filter((o) => o !== '<all_urls>') };
+  const LAUNCHER_OPTIONS = [
+    ['off', 'Off', 'Use the toolbar icon or the keyboard shortcut.'],
+    ['jobsites', 'On job application sites', 'Greenhouse, Lever, Ashby, Workday, SmartRecruiters, iCIMS, Jobvite, Workable and similar. Chrome will ask to allow access to these sites.'],
+    ['all', 'On any site with an application form', 'Also covers company careers pages. Chrome will ask to allow access to all sites.'],
+  ];
 
   function toggle(label, hint, checked, onchange) {
     const input = h('input', { type: 'checkbox', checked, onchange: (e) => onchange(e.target.checked, e.target) });
@@ -42,9 +48,11 @@
   }
 
   async function render(container) {
-    const [settings, hasAllSites] = await Promise.all([
+    const [settings, hasAllSites, hasJobSites, stored] = await Promise.all([
       JF.storage.getSettings(),
       chrome.permissions ? chrome.permissions.contains(ALL_SITES) : Promise.resolve(false),
+      chrome.permissions ? chrome.permissions.contains(JOB_SITES) : Promise.resolve(false),
+      chrome.storage.local.get('launcherHidden'),
     ]);
     const set = (key) => async (value) => {
       await JF.storage.saveSettings({ [key]: value });
@@ -63,12 +71,48 @@
           const ok = on ? await chrome.permissions.request(ALL_SITES) : await chrome.permissions.remove(ALL_SITES);
           if (!ok) input.checked = !on;
           toast(ok ? (on ? 'Embedded forms enabled.' : 'Embedded forms disabled.') : 'Permission not changed.', ok ? 'ok' : 'error');
+          if (ok) render(container);
         } catch (e) {
           input.checked = !on;
           toast('Could not change permission: ' + e.message, 'error');
         }
       }),
       h('p', {}, h('a', { href: '#', onclick: (e) => { e.preventDefault(); chrome.tabs.create({ url: 'chrome://extensions/shortcuts' }); } }, 'Change the keyboard shortcut'))
+    );
+
+    // ---- On-page button ----
+    // Shown as off when Chrome's permission for the chosen sites is missing.
+    const granted = { off: true, jobsites: hasJobSites, all: hasAllSites };
+    const launcher = granted[settings.launcher] ? settings.launcher : 'off';
+    const hiddenSites = stored.launcherHidden || [];
+    const chooseLauncher = async (mode) => {
+      try {
+        const perm = mode === 'all' ? ALL_SITES : mode === 'jobsites' ? JOB_SITES : null;
+        if (perm && !(await chrome.permissions.request(perm))) {
+          toast('Permission not granted; the button stays off.', 'error');
+          return render(container);
+        }
+        // Turning it off drops the job-site access; all-sites access is kept
+        // because embedded forms use it too.
+        if (mode !== 'jobsites' && hasJobSites && !hasAllSites) await chrome.permissions.remove(JOB_SITES);
+        await JF.storage.saveSettings({ launcher: mode });
+        toast(mode === 'off' ? 'Button turned off.' : 'Button turned on. Reload open application pages to see it.');
+      } catch (e) {
+        toast('Could not change permission: ' + e.message, 'error');
+      }
+      render(container);
+    };
+    const launcherCard = h('section.card', {},
+      h('h3', {}, 'On-page button'),
+      h('p.muted', {}, 'Shows the job_filler logo on the right edge of pages that look like a job application. Click it to fill the form. It only looks for form fields; nothing is filled or sent until you click.'),
+      LAUNCHER_OPTIONS.map(([value, label, hint]) => h('div.setting', {},
+        h('label.check', {}, h('input', { type: 'radio', name: 'launcher', value, checked: launcher === value, onchange: () => chooseLauncher(value) }), ' ', h('strong', {}, label)),
+        h('p.muted.small', {}, hint))),
+      hiddenSites.length
+        ? h('div.actions', {},
+          h('span.muted.small', {}, `Hidden on ${hiddenSites.length} site${hiddenSites.length > 1 ? 's' : ''}: ${hiddenSites.slice(0, 5).join(', ')}${hiddenSites.length > 5 ? '…' : ''}`),
+          h('button.secondary', { type: 'button', onclick: async () => { await chrome.storage.local.remove('launcherHidden'); toast('The button will show on those sites again.'); render(container); } }, 'Show on these sites again'))
+        : null
     );
 
     // ---- Ignored questions ----
@@ -124,7 +168,7 @@
       }))
     );
 
-    container.replaceChildren(h('h2', {}, 'Settings & backup'), filling, ignoredCard, backup, danger);
+    container.replaceChildren(h('h2', {}, 'Settings & backup'), filling, launcherCard, ignoredCard, backup, danger);
   }
 
   JF.views.settings = { title: 'Settings & backup', render };

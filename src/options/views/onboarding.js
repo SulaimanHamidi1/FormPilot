@@ -31,7 +31,7 @@
       render: (draft, ctx) => {
         const note = h('p.muted', { 'aria-live': 'polite' });
         return [
-          h('p', {}, 'job_filler fills job applications from the answers you give here. It takes about 5 minutes, and you can change anything later.'),
+          h('p', {}, 'FormPilot fills job applications from the answers you give here. It takes about 5 minutes, and you can change anything later.'),
           h('p', {}, 'Start by uploading your resume so we can pre-fill the next steps. You can also skip this.'),
           JF.views.resume.uploader((parsed) => {
             Object.assign(draft, JF.resumeParse.mergeIntoProfile(draft, parsed));
@@ -84,7 +84,7 @@
           const def = { label: q.question, type: q.type === 'yesNo' ? 'select' : q.type, choices: 'yesNo', rows: 3 };
           return JF.forms.control(def, value, set);
         });
-        return [h('p.muted', {}, 'Leave any blank to skip. When a site asks something new, job_filler will offer to save your answer for next time.'), h('div.grid', {}, rows)];
+        return [h('p.muted', {}, 'Leave any blank to skip. When a site asks something new, FormPilot will offer to save your answer for next time.'), h('div.grid', {}, rows)];
       },
     },
     {
@@ -93,8 +93,8 @@
         h('p', {}, `You're set, ${draft.personal.firstName || 'there'}.`),
         h('ol', {},
           h('li', {}, 'Open a job application.'),
-          h('li', {}, 'Click the job_filler toolbar icon and press Fill, or use the keyboard shortcut (Alt+Shift+J by default).'),
-          h('li', {}, 'Check every field, answer anything highlighted as unknown, then submit yourself. job_filler never submits for you.')
+          h('li', {}, 'Click the FormPilot toolbar icon and press Fill, or use the keyboard shortcut (Alt+Shift+J by default).'),
+          h('li', {}, 'Check every field, answer anything highlighted as unknown, then submit yourself. FormPilot never submits for you.')
         ),
         h('p.muted', {}, 'You can edit everything from the Profile and Saved answers pages.'),
       ],

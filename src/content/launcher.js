@@ -1,4 +1,4 @@
-// Floating job_filler button on the right edge of pages that look like a job
+// Floating FormPilot button on the right edge of pages that look like a job
 // application. Registered by the service worker only when the user turns it on
 // in Settings. It is small and standalone: the filler itself is still injected
 // only when the button (or the popup/shortcut) is used.
@@ -94,8 +94,8 @@
     host.setAttribute(HOST_ATTR, '');
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${STYLE}</style><div class="tab">`
-      + '<button class="hide" title="Don\'t show on this site" aria-label="Don\'t show the job_filler button on this site">×</button>'
-      + `<button class="go" title="Fill this application (job_filler)" aria-label="Fill this application with job_filler">${LOGO}</button></div>`;
+      + '<button class="hide" title="Don\'t show on this site" aria-label="Don\'t show the FormPilot button on this site">×</button>'
+      + `<button class="go" title="Fill this application (FormPilot)" aria-label="Fill this application with FormPilot">${LOGO}</button></div>`;
     const go = root.querySelector('.go');
     go.addEventListener('click', () => fill(go));
     root.querySelector('.hide').addEventListener('click', hideOnSite);

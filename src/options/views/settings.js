@@ -62,13 +62,13 @@
     // ---- Filling ----
     const filling = h('section.card', {},
       h('h3', {}, 'Filling'),
-      toggle('Highlight filled fields', 'Green outline on fields job_filler filled, amber on questions that need you.', settings.highlight, set('highlight')),
-      toggle('Scroll to each field as it\'s filled', 'Follow along on the page while job_filler fills it. Turn off to fill without moving the page.', settings.followFill, set('followFill')),
+      toggle('Highlight filled fields', 'Green outline on fields FormPilot filled, amber on questions that need you.', settings.highlight, set('highlight')),
+      toggle('Scroll to each field as it\'s filled', 'Follow along on the page while FormPilot fills it. Turn off to fill without moving the page.', settings.followFill, set('followFill')),
       toggle('Add work and education entries', 'When a section starts with an "Add" button (common on Workday), click it once for each job and school in your profile.', settings.expandLists, set('expandLists')),
-      toggle('Ask about unknown questions', 'Show the on-page panel to answer and save questions job_filler couldn\'t answer.', settings.askUnknown, set('askUnknown')),
+      toggle('Ask about unknown questions', 'Show the on-page panel to answer and save questions FormPilot couldn\'t answer.', settings.askUnknown, set('askUnknown')),
       toggle('Replace values already in the form', 'Off by default: anything you or the site already entered is left alone.', settings.overwrite, set('overwrite')),
       toggle('Continue through multi-step applications', 'On Workday, iCIMS, Taleo and similar sites, fill each new step automatically after you start.', settings.watchMultiStep, set('watchMultiStep')),
-      toggle('Fill forms embedded from other sites', 'Some careers pages embed the application from another domain (e.g. a Greenhouse form on a company site). Chrome will ask you to allow access to all sites; job_filler still only runs when you press Fill.', hasAllSites, async (on, input) => {
+      toggle('Fill forms embedded from other sites', 'Some careers pages embed the application from another domain (e.g. a Greenhouse form on a company site). Chrome will ask you to allow access to all sites; FormPilot still only runs when you press Fill.', hasAllSites, async (on, input) => {
         try {
           const ok = on ? await chrome.permissions.request(ALL_SITES) : await chrome.permissions.remove(ALL_SITES);
           if (!ok) input.checked = !on;
@@ -106,7 +106,7 @@
     };
     const launcherCard = h('section.card', {},
       h('h3', {}, 'On-page button'),
-      h('p.muted', {}, 'Shows the job_filler logo on the right edge of pages that look like a job application. Click it to fill the form. It only looks for form fields; nothing is filled or sent until you click.'),
+      h('p.muted', {}, 'Shows the FormPilot logo on the right edge of pages that look like a job application. Click it to fill the form. It only looks for form fields; nothing is filled or sent until you click.'),
       LAUNCHER_OPTIONS.map(([value, label, hint]) => h('div.setting', {},
         h('label.check', {}, h('input', { type: 'radio', name: 'launcher', value, checked: launcher === value, onchange: () => chooseLauncher(value) }), ' ', h('strong', {}, label)),
         h('p.muted.small', {}, hint))),
@@ -151,7 +151,7 @@
           type: 'button',
           onclick: async () => {
             const data = await JF.storage.exportData({ includeResume: includeResume.checked });
-            download(`job_filler-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 2));
+            download(`FormPilot-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 2));
           },
         }, 'Export backup'),
         h('button.secondary', { type: 'button', onclick: () => importInput.click() }, 'Import backup'),

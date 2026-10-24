@@ -19,7 +19,7 @@ $('fill').addEventListener('click', async () => {
   const res = await chrome.runtime.sendMessage({ type: 'fill', tabId: tab.id });
   if (!res || !res.ok) {
     $('fill').disabled = false;
-    showResult('job_filler can\'t run on this page. ' + ((res && res.error) || ''), 'warn');
+    showResult('FormPilot can\'t run on this page. ' + ((res && res.error) || ''), 'warn');
     return;
   }
   // Results appear on the page itself.

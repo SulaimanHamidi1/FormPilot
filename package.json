@@ -1,5 +1,5 @@
 {
-  "name": "job_filler",
+  "name": "formpilot",
   "version": "1.0.0",
   "private": true,
   "description": "Chrome extension (MV3) that auto-fills job applications from a locally stored profile.",

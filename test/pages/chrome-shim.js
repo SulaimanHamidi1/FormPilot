@@ -34,7 +34,7 @@
     },
     storage: { local, onChanged: { addListener: (fn) => listeners.push(fn) } },
     runtime: {
-      id: 'job-filler-shim',
+      id: 'formpilot-shim',
       sendMessage: async (msg) => {
         console.log('[shim] sendMessage', msg);
         // Stand-in for the service worker on single-frame test pages.

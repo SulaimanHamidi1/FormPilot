@@ -15,7 +15,8 @@
     expandLists: true,
     launcher: 'off', // on-page button: 'off' | 'jobsites' | 'all'
   };
-  const EXPORT_FORMAT = 'job_filler-backup';
+  const EXPORT_FORMAT = 'formpilot-backup';
+  const LEGACY_FORMATS = ['job_filler-backup']; // backups made before the rename
   const MAX_RESUME_BYTES = 5 * 1024 * 1024;
 
   const area = () => chrome.storage.local;
@@ -122,7 +123,7 @@
     const data = typeof json === 'string' ? JSON.parse(json) : json;
     if (!data || typeof data !== 'object') throw new Error('Not a valid backup file.');
     // Accept a full backup or a bare profile object.
-    const isBackup = data.format === EXPORT_FORMAT;
+    const isBackup = data.format === EXPORT_FORMAT || LEGACY_FORMATS.includes(data.format);
     const profile = JF.schema.normalize(isBackup ? data.profile : data);
     const items = { [KEYS.profile]: profile };
     if (isBackup && data.settings) items[KEYS.settings] = { ...DEFAULT_SETTINGS, ...data.settings };

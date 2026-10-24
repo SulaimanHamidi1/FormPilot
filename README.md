@@ -1,4 +1,4 @@
-# job_filler
+# FormPilot
 
 A lightweight Chrome extension (Manifest V3) that fills job applications from a
 profile you set up once. Everything stays on your device in
@@ -35,7 +35,7 @@ extension's card in `chrome://extensions`.
    icon and then **Fill this page**. You can change the shortcut at
    `chrome://extensions/shortcuts`.
 3. The page scrolls to each field as it's filled so you can follow along
-   (turn this off in **Settings & backup**). Filled fields get a green outline. Questions job_filler couldn't answer get an
+   (turn this off in **Settings & backup**). Filled fields get a green outline. Questions FormPilot couldn't answer get an
    amber outline and appear in a small panel in the corner. Answer them there and
    they're filled in and saved for next time. **Skip** ignores a question once;
    **Don't ask** ignores it for good.
@@ -43,7 +43,7 @@ extension's card in `chrome://extensions`.
 
 ### On-page button
 
-Turn on **Settings & backup → On-page button** to show the job_filler logo on the
+Turn on **Settings & backup → On-page button** to show the FormPilot logo on the
 right edge of pages that look like a job application. Click it to fill the
 form; hover and click **×** to stop showing it on that site. Choose **On job
 application sites** (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, iCIMS

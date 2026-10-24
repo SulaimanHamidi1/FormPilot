@@ -77,7 +77,7 @@ async function fillAnswers(tabId, answers) {
 
 chrome.commands.onCommand.addListener(async (command, tab) => {
   if (command === 'fill-form' && tab && tab.id != null) {
-    await fillTab(tab.id).catch((e) => console.warn('job_filler:', e));
+    await fillTab(tab.id).catch((e) => console.warn('FormPilot:', e));
   }
 });
 
@@ -135,7 +135,7 @@ async function syncLauncher() {
 
 let syncing = Promise.resolve();
 const resync = () => {
-  syncing = syncing.then(syncLauncher).catch((e) => console.warn('job_filler launcher:', e));
+  syncing = syncing.then(syncLauncher).catch((e) => console.warn('FormPilot launcher:', e));
 };
 
 chrome.storage.onChanged.addListener((changes, area) => {

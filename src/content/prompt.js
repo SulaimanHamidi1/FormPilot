@@ -138,14 +138,14 @@
       return row;
     });
     const filledText = `Filled ${summary.filled} field${summary.filled === 1 ? '' : 's'}.`;
-    const panel = el('div', { class: 'panel', role: 'dialog', 'aria-label': 'job_filler questions' },
+    const panel = el('div', { class: 'panel', role: 'dialog', 'aria-label': 'FormPilot questions' },
       el('div', { class: 'head' },
         el('span', { class: 'dot warn' }),
         el('strong', {}, `${items.length} question${items.length === 1 ? '' : 's'} need${items.length === 1 ? 's' : ''} your answer`),
         el('button', { class: 'x', title: 'Minimize', 'aria-label': 'Minimize', onclick: () => minimize(panel, items.length) }, '–'),
         el('button', { class: 'x', title: 'Close', 'aria-label': 'Close', onclick: close }, '×')
       ),
-      el('div', { class: 'sub' }, filledText + ' Answer these once and job_filler will reuse them on future applications.'),
+      el('div', { class: 'sub' }, filledText + ' Answer these once and FormPilot will reuse them on future applications.'),
       status,
       el('div', { class: 'list' }, rows.map((r) => r.node)),
       el('div', { class: 'foot' },

@@ -484,7 +484,7 @@
           break;
       }
     } catch (e) {
-      console.debug('job_filler: could not fill', field.label, e);
+      console.debug('FormPilot: could not fill', field.label, e);
       ok = false;
     }
     if (ok) {

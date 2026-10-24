@@ -52,7 +52,7 @@ test('custom answers upsert by question text', async () => {
 test('export / clear / import round trip', async () => {
   await storage.saveSettings({ onboarded: true });
   const backup = await storage.exportData();
-  assert.strictEqual(backup.format, 'job_filler-backup');
+  assert.strictEqual(backup.format, 'formpilot-backup');
   await storage.clearAll();
   assert.strictEqual((await storage.getProfile()).personal.email, '');
   await storage.importData(JSON.stringify(backup));

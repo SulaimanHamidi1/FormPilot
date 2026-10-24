@@ -47,7 +47,7 @@
         .filter((c) => !term || c.question.toLowerCase().includes(term) || c.answer.toLowerCase().includes(term))
         .sort((x, y) => y.updatedAt - x.updatedAt);
       list.replaceChildren(
-        ...(items.length ? items.map(row) : [h('p.muted', {}, term ? 'No saved answers match.' : 'No saved answers yet. When an application asks something new, job_filler offers to save your answer here.')])
+        ...(items.length ? items.map(row) : [h('p.muted', {}, term ? 'No saved answers match.' : 'No saved answers yet. When an application asks something new, FormPilot offers to save your answer here.')])
       );
     };
     search.addEventListener('input', draw);

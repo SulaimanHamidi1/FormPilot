@@ -1,4 +1,4 @@
-# job_filler
+# FormPilot
 
 A lightweight Chrome extension (Manifest V3) that fills job applications from a
 profile you set up once. Everything stays on your device in

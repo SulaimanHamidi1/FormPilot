@@ -24,6 +24,10 @@
     .toast { padding: 10px 14px; display: flex; gap: 10px; align-items: center; max-width: 360px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
     .dot.warn { background: var(--warn); }
+    .dot.busy { background: var(--accent); animation: pulse .8s ease-in-out infinite alternate; }
+    @keyframes pulse { to { opacity: .35; } }
+    @media (prefers-reduced-motion: reduce) { .dot.busy { animation: none; } }
+    button:disabled { cursor: default; opacity: .6; }
     button { font: inherit; cursor: pointer; border-radius: 6px; padding: 5px 10px; }
     button.primary { background: var(--accent); color: var(--accent-fg); border: 0; font-weight: 600; }
     button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
@@ -66,7 +70,7 @@
   let toastTimer;
   function toast(message, { warn = false, ms = 4000 } = {}) {
     const w = wrap();
-    w.querySelectorAll('.toast').forEach((t) => t.remove());
+    w.querySelectorAll('.toast:not(.stopbar)').forEach((t) => t.remove());
     const t = el('div', { class: 'toast', role: 'status' },
       el('span', { class: 'dot' + (warn ? ' warn' : '') }),
       el('span', {}, message),
@@ -77,10 +81,38 @@
     if (ms) toastTimer = setTimeout(() => t.remove(), ms);
   }
 
+  // "Filling..." bar with a Stop button, shown in the top frame while a fill
+  // runs. Stop halts this frame at once and asks the service worker to stop
+  // every other frame of the tab.
+  function showStop() {
+    const w = wrap();
+    if (w.querySelector('.stopbar')) return;
+    const btn = el('button', {
+      class: 'ghost', title: 'Stop filling this page',
+      onclick: () => {
+        btn.disabled = true;
+        btn.textContent = 'Stopping…';
+        if (JF.stop) JF.stop();
+        try {
+          if (chrome.runtime && chrome.runtime.id) chrome.runtime.sendMessage({ type: 'stop' }).catch(() => {});
+        } catch {}
+      },
+    }, 'Stop');
+    w.append(el('div', { class: 'toast stopbar', role: 'status' },
+      el('span', { class: 'dot busy' }),
+      el('span', {}, 'FormPilot is filling this page…'),
+      btn
+    ));
+  }
+
+  function hideStop() {
+    if (host && host.isConnected) root.querySelectorAll('.stopbar').forEach((s) => s.remove());
+  }
+
   function remove() {
     if (host) host.remove();
     host = root = null;
   }
 
-  JF.ui = { toast, el, wrap, ensureRoot, remove, extraStyle: '' };
+  JF.ui = { toast, el, wrap, ensureRoot, remove, showStop, hideStop, extraStyle: '' };
 })();

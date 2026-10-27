@@ -37,11 +37,19 @@ async function fillTab(tabId) {
   const results = await chrome.scripting.executeScript({
     target: { tabId, allFrames: true },
     func: () => (globalThis.JF && globalThis.JF.run ? globalThis.JF.run() : null),
+  }).catch(async (e) => {
+    // Don't leave the Stop bar up if the fill itself failed.
+    await chrome.scripting.executeScript({
+      target: { tabId, frameIds: [0] },
+      func: () => globalThis.JF && globalThis.JF.ui && globalThis.JF.ui.hideStop(),
+    }).catch(() => {});
+    throw e;
   });
-  const summary = { filled: 0, kept: 0, failed: 0, unknown: [], frames: 0, ms: 0 };
+  const summary = { filled: 0, kept: 0, failed: 0, unknown: [], frames: 0, ms: 0, stopped: false };
   for (const r of results) {
     if (!r.result) continue;
     summary.frames++;
+    summary.stopped = summary.stopped || !!r.result.stopped;
     summary.filled += r.result.filled;
     summary.kept += r.result.kept;
     summary.failed += r.result.failed;
@@ -101,6 +109,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .then((filled) => sendResponse({ ok: true, filled }))
       .catch((e) => sendResponse({ ok: false, error: String(e.message || e) }));
     return true;
+  }
+  if (msg.type === 'stop' && sender.tab) {
+    // The Stop button lives in the top frame; stop the fill in every frame.
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id, allFrames: true },
+      func: () => globalThis.JF && globalThis.JF.stop && globalThis.JF.stop(),
+    }).catch(() => {});
+    return false;
   }
   if (msg.type === 'openOptions') {
     chrome.runtime.openOptionsPage();

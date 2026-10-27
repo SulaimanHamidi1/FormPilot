@@ -7,6 +7,9 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // Matches that still need the user, kept so answers can be filled in later.
   const pending = new Map();
+  // Set by the on-page Stop button; checked between fields.
+  let stopped = false;
+  const shouldStop = () => stopped;
 
   async function analyze() {
     const profile = await JF.storage.getProfile();
@@ -46,18 +49,20 @@
     const t0 = performance.now();
     const settings = await JF.storage.getSettings();
     let resumePromise;
-    const ctx = { settings, getResume: () => (resumePromise = resumePromise || JF.storage.getResume()) };
+    stopped = false;
+    if (window === window.top) JF.ui.showStop();
+    const ctx = { settings, shouldStop, getResume: () => (resumePromise = resumePromise || JF.storage.getResume()) };
 
     const ignored = new Set(settings.ignored || []);
     const seen = new Set();
     const counts = { filled: 0, kept: 0, failed: 0 };
     pending.clear();
-    // Click "Add" in empty work/education sections so there are blocks to fill.
+    // Click "Add" in empty work/education/project sections so there are blocks to fill.
     if (settings.expandLists) {
-      await JF.expand.run(await JF.storage.getProfile(), { follow: settings.followFill }).catch((e) => console.warn('FormPilot:', e));
+      await JF.expand.run(await JF.storage.getProfile(), { follow: settings.followFill, shouldStop }).catch((e) => console.warn('FormPilot:', e));
     }
     // Two passes: answers can reveal follow-up fields (e.g. country -> state).
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < 2 && !stopped; pass++) {
       const { profile, matches } = await analyze();
       ctx.profile = profile;
       const fresh = matches.filter((m) => !seen.has(m.field.el));
@@ -75,18 +80,19 @@
           if (settings.highlight) JF.fill.highlight(m.field.el, JF.fill.WARN_COLOR);
         }
       }
-      if (!res.filled.length) break;
+      if (!res.filled.length || stopped) break;
       await sleep(300);
     }
     // JF_FORCE_WATCH lets the local test pages exercise this; page scripts
     // can't reach the content script's isolated world in the extension.
-    if (settings.watchMultiStep && (MULTI_STEP.test(location.hostname) || globalThis.JF_FORCE_WATCH)) watch();
+    if (!stopped && settings.watchMultiStep && (MULTI_STEP.test(location.hostname) || globalThis.JF_FORCE_WATCH)) watch();
     return {
       url: location.href,
       top: window === window.top,
       filled: counts.filled,
       kept: counts.kept,
       failed: counts.failed,
+      stopped,
       unknown: [...pending.values()].map((m) => describe(m, frameKey)),
       ms: Math.round(performance.now() - t0),
     };
@@ -104,13 +110,13 @@
     let timer = null;
     let quietUntil = performance.now() + 1500;
     observer = new MutationObserver(() => {
-      if (running || performance.now() < quietUntil) return;
+      if (running || stopped || performance.now() < quietUntil) return;
       clearTimeout(timer);
       timer = setTimeout(async () => {
         // Only act when a new step has unfilled fields we can answer.
         const { matches } = await analyze();
         const fresh = matches.filter((m) => (m.key || m.custom) && m.value && !m.field.el.hasAttribute(JF.fill.FILLED_ATTR) && !JF.fill.hasValue(m.field));
-        if (fresh.length < 2) return;
+        if (fresh.length < 2 || stopped) return;
         running = true;
         try {
           const res = await JF.run();
@@ -124,6 +130,14 @@
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
     setTimeout(() => { observer.disconnect(); observer = null; }, 30 * 60 * 1000);
   }
+
+  // Stop filling in this frame: the field in progress finishes, nothing after
+  // it is touched, and multi-step watching ends.
+  JF.stop = () => {
+    stopped = true;
+    if (observer) observer.disconnect();
+    observer = null;
+  };
 
   // Fill answers the user just gave for pending fields in this frame.
   JF.fillAnswers = async (answers) => {
@@ -145,6 +159,11 @@
 
   // Summary for the whole tab (all frames), shown in the top frame.
   JF.showSummary = (s) => {
+    JF.ui.hideStop();
+    if (s.stopped) {
+      JF.ui.toast(`Stopped after filling ${s.filled} field${s.filled === 1 ? '' : 's'}. Review before submitting.`, { warn: true, ms: 6000 });
+      return;
+    }
     const parts = [`Filled ${s.filled} field${s.filled === 1 ? '' : 's'}`];
     if (s.kept) parts.push(`kept ${s.kept} you'd already entered`);
     if (s.unknown.length) parts.push(`${s.unknown.length} need${s.unknown.length === 1 ? 's' : ''} your answer`);

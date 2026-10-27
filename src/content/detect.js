@@ -8,12 +8,14 @@
   const SKIP_TYPES = new Set(['hidden', 'submit', 'button', 'image', 'reset', 'password', 'search', 'color', 'range']);
   const TEXT_SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'SELECT', 'OPTION', 'TEXTAREA', 'INPUT', 'SVG', 'TEMPLATE']);
   const HOST_ATTR = 'data-jf-ui';
-  const SECTION_RE = /(work|employment|experience|position|job|education|school)[a-z]*?[\W_]{0,3}(\d+)/i;
+  const SECTION_RE = /(project|work|employment|experience|position|job|education|school)[a-z]*?[\W_]{0,3}(\d+)/i;
   const HEAD_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'LEGEND']);
   const SECTION_TEXT = {
-    work: /\b(work|employment|professional|job)\s+(experience|history)\b|^(work\s+)?experience$|^employment$/i,
+    projects: /^((personal|academic|selected|relevant|key|side|technical|notable|research)\s+)?projects?(\s+(experience|history|portfolio))?$/i,
     education: /^education\b|\beducation(al)?\s+(history|background)\b/i,
+    work: /\b(work|employment|professional|job)\s+(experience|history)\b|^(work\s+)?experience$|^employment$/i,
   };
+  const SECTION_OF_WORD = { education: 'education', school: 'education', project: 'projects' };
 
   const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
@@ -110,25 +112,29 @@
       .join(' ');
   }
 
-  // Split date inputs (Workday: separate Month / Year spinbuttons).
+  // Split date inputs: Workday's bare Month / Year spinbuttons, or
+  // Greenhouse's "Start date month" dropdown beside a "Start date year" box.
   const DATE_PART = { month: 'month', mm: 'month', year: 'year', yyyy: 'year', yy: 'year', day: 'day', dd: 'day' };
+  const NAMED_DATE_PART = /\b(?:date|start|end|from|to|graduation|grad|completion|expected)\W+(month|year|day)\W*$/i;
+  const DATE_PART_ATTR = /(?:start|end|from|to|grad\w*)[-_]?(month|year|day)\b/i;
+  const isBareDatePart = (label) => !!DATE_PART[label.toLowerCase().replace(/[^a-z]/g, '')];
   function datePartOf(el, label) {
     const l = label.toLowerCase().replace(/[^a-z]/g, '');
     if (DATE_PART[l]) return DATE_PART[l];
-    const m = (el.getAttribute('data-automation-id') || '').match(/dateSection(Month|Year|Day)/i);
+    const m =
+      (el.getAttribute('data-automation-id') || '').match(/dateSection(Month|Year|Day)/i) ||
+      label.match(NAMED_DATE_PART) ||
+      [el.id, el.name].join(' ').match(DATE_PART_ATTR);
     return m ? m[1].toLowerCase() : null;
   }
 
-  // Which repeating block (work/education) a field sits in, and its index.
+  // Which repeating block (work/education/projects) a field sits in, and its index.
   function sectionOf(el) {
     let node = el;
-    for (let depth = 0; depth < 8 && node && node.nodeType === 1; depth++) {
+    for (let depth = 0; depth < 12 && node && node.nodeType === 1; depth++) {
       const attrs = [node.getAttribute('name'), node.id, node.getAttribute('data-automation-id'), node.getAttribute('data-qa')].filter(Boolean).join(' ');
       const m = attrs.match(SECTION_RE);
-      if (m) {
-        const word = m[1].toLowerCase();
-        return { section: word === 'education' || word === 'school' ? 'education' : 'work', index: Number(m[2]) };
-      }
+      if (m) return { section: SECTION_OF_WORD[m[1].toLowerCase()] || 'work', index: Number(m[2]) };
       // The closest heading before the field decides its section. Only the
       // children (and div grandchildren) before the field's branch are
       // checked, so this stays cheap on large pages.
@@ -140,8 +146,9 @@
       }
       if (head) {
         const t = clean(head.textContent);
-        if (t.length < 60 && SECTION_TEXT.education.test(t)) return { section: 'education', index: null };
-        if (t.length < 60 && SECTION_TEXT.work.test(t)) return { section: 'work', index: null };
+        for (const [section, re] of Object.entries(SECTION_TEXT)) {
+          if (t.length < 60 && re.test(t)) return { section, index: null };
+        }
         return { section: null, index: null };
       }
       node = parentOf(node);
@@ -255,8 +262,9 @@
 
   function makeField(el, kind, extra = {}) {
     let label = extra.label != null ? extra.label : directLabel(el);
-    const datePart = kind === 'text' ? datePartOf(el, label) : null;
-    if (datePart) label = datePartQuestion(el) || label;
+    const datePart = ['text', 'combobox', 'select', 'listbox'].includes(kind) ? datePartOf(el, label) : null;
+    // A bare "Month" says nothing; "Start date month" already names the date.
+    if (datePart && (!label || isBareDatePart(label))) label = datePartQuestion(el) || label;
     const { section, index } = sectionOf(el);
     return {
       id: ++seq,

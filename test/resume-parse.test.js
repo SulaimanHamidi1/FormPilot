@@ -87,3 +87,35 @@ test('merge fills only empty fields unless overwrite', () => {
   const o = resumeParse.mergeIntoProfile(base, parsed, { overwrite: true });
   assert.strictEqual(o.personal.email, 'new@x.com');
 });
+
+test('projects are parsed separately from experience', () => {
+  const r = resumeParse.parseText([
+    'Jane Doe',
+    'EXPERIENCE',
+    'Software Engineer | Stripe | Jan 2021 – Present',
+    '• Built ledgers.',
+    'PERSONAL PROJECTS',
+    'FormPilot | github.com/janedoe/FormPilot | Mar 2025 – Present',
+    'JavaScript, Chrome Extensions',
+    '• Fills job applications from a local profile.',
+    'Ledger Viz — Lead Developer (Jan 2023 – Jun 2023)',
+    '• Visualizes double-entry ledgers.',
+    'EDUCATION',
+    'University of California, Berkeley',
+  ].join('\n'));
+  assert.strictEqual(r.work.length, 1);
+  assert.strictEqual(r.work[0].company, 'Stripe');
+  assert.strictEqual(r.projects.length, 2);
+  assert.strictEqual(r.projects[0].name, 'FormPilot');
+  assert.strictEqual(r.projects[0].url, 'https://github.com/janedoe/FormPilot');
+  assert.strictEqual(r.projects[0].startDate, '2025-03');
+  assert.strictEqual(r.projects[0].endDate, '');
+  assert.strictEqual(r.projects[0].description, 'JavaScript, Chrome Extensions\n• Fills job applications from a local profile.');
+  assert.strictEqual(r.projects[1].name, 'Ledger Viz');
+  assert.strictEqual(r.projects[1].role, 'Lead Developer');
+  assert.strictEqual(r.projects[1].endDate, '2023-06');
+  assert.strictEqual(resumeParse.headingOf('Project Experience'), 'projects');
+  assert.strictEqual(resumeParse.headingOf('Projects'), 'projects');
+  // Project dates don't count as years of experience.
+  assert.ok(Number(r.preferences.yearsExperience) < 7);
+});

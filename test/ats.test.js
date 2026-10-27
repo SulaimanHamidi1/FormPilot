@@ -51,6 +51,26 @@ test('Greenhouse: system fields, react-select questions, EEO', async () => {
   assert.ok(![...ms.keys()].some((f) => f.el.getAttribute('tabindex') === '-1' && f.kind === 'text'));
 });
 
+test('Greenhouse: split education dates (month dropdown + year box)', async () => {
+  const { w, d, keys } = await page('test/pages/forms/greenhouse-education.html');
+  const ms = keys();
+  const byId = (id) => matchFor(ms, (f) => f.el.id === id);
+  assert.strictEqual(byId('start-month--0').field.datePart, 'month');
+  assert.strictEqual(byId('start-month--0').key, 'education.startDate');
+  assert.strictEqual(byId('end-year--0').field.datePart, 'year');
+  assert.strictEqual(byId('end-year--0').key, 'education.endDate');
+  const res = await w.JF.run();
+  const $ = (s) => d.querySelector(s);
+  assert.strictEqual($('#school--0').dataset.selected, 'University of California, Berkeley');
+  assert.strictEqual($('#degree--0').dataset.selected, "Bachelor's Degree");
+  assert.strictEqual($('#discipline--0').dataset.selected, 'Computer Science');
+  assert.strictEqual($('#start-month--0').dataset.selected, 'August');
+  assert.strictEqual($('#start-year--0').value, '2013');
+  assert.strictEqual($('#end-month--0').dataset.selected, 'May');
+  assert.strictEqual($('#end-year--0').value, '2017');
+  assert.strictEqual(res.unknown.length, 0);
+});
+
 test('Lever: fills cards, radios, selects and picks the location suggestion', async () => {
   const { w, d } = await page('test/pages/forms/lever.html');
   const res = await w.JF.run();

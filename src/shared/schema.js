@@ -125,6 +125,18 @@
         { key: 'gpa', label: 'GPA' },
       ],
     },
+    projects: {
+      title: 'Projects',
+      itemLabel: 'Project',
+      fields: [
+        { key: 'name', label: 'Project name' },
+        { key: 'role', label: 'Your role' },
+        { key: 'url', label: 'Link (repo, demo, ...)' },
+        { key: 'startDate', label: 'Start (YYYY-MM)', type: 'month' },
+        { key: 'endDate', label: 'End (YYYY-MM)', type: 'month' },
+        { key: 'description', label: 'Description', type: 'textarea' },
+      ],
+    },
   };
 
   function emptyItem(listName) {
@@ -142,6 +154,7 @@
     for (const k of Object.keys(p.eeo)) p.eeo[k] = DECLINE;
     p.work = [];
     p.education = [];
+    p.projects = [];
     p.skills = [];
     p.summary = '';
     p.coverLetter = '';

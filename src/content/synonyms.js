@@ -122,6 +122,30 @@
       listOnly: true,
     }),
 
+    // ---- Projects (only inside a projects block) ----
+    R('projects.name', ['project name', 'project title', 'name of project', 'project', 'name', 'title'], {
+      attrs: ['project name', 'projectname', 'project title', 'name', 'title'],
+      listOnly: true,
+    }),
+    R('projects.role', ['your role', 'role', 'position', 'contribution role'], { attrs: ['role', 'position'], listOnly: true }),
+    R('projects.url', ['project url', 'project link', 'url', 'link', 'website', 'repository', 'repo', 'github', 'demo'], {
+      attrs: ['url', 'link', 'website', 'repo', 'repository'],
+      listOnly: true,
+    }),
+    R('projects.startDate', ['start date', 'from', 'date started', 'start'], {
+      attrs: ['start date', 'startdate', 'from', 'date from'],
+      listOnly: true,
+    }),
+    R('projects.endDate', ['end date', 'to', 'date ended', 'completion date', 'end'], {
+      attrs: ['end date', 'enddate', 'to', 'date to'],
+      listOnly: true,
+    }),
+    R('projects.description', ['description', 'project description', 'summary', 'details', 'what did you build', 'technologies used'], {
+      attrs: ['description', 'summary', 'details'],
+      kinds: ['textarea', 'text'],
+      listOnly: true,
+    }),
+
     // ---- Education ----
     R('education.school', ['school', 'university', 'college', 'institution', 'school name', 'university name', 'school university', 'educational institution', 'name of school', 'most recent school'], {
       attrs: ['school', 'university', 'college', 'institution', 'school name'],

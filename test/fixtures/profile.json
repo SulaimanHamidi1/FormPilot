@@ -12,6 +12,10 @@
   "education": [
     { "school": "University of California, Berkeley", "degree": "Bachelor's", "field": "Computer Science", "startDate": "2013-08", "endDate": "2017-05", "gpa": "3.8" }
   ],
+  "projects": [
+    { "name": "FormPilot", "role": "Creator", "url": "https://github.com/janedoe/FormPilot", "startDate": "2025-03", "endDate": "", "description": "Chrome extension that fills job applications." },
+    { "name": "Ledger Viz", "role": "", "url": "https://ledgerviz.dev", "startDate": "2023-01", "endDate": "2023-06", "description": "Visualizes double-entry ledgers." }
+  ],
   "skills": ["Go", "Python", "SQL"],
   "summary": "Backend engineer.",
   "coverLetter": "Dear hiring team, ...",

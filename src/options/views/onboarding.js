@@ -35,7 +35,7 @@
           h('p', {}, 'Start by uploading your resume so we can pre-fill the next steps. You can also skip this.'),
           JF.views.resume.uploader((parsed) => {
             Object.assign(draft, JF.resumeParse.mergeIntoProfile(draft, parsed));
-            const counts = `${(parsed.work || []).length} positions, ${(parsed.education || []).length} schools, ${(parsed.skills || []).length} skills`;
+            const counts = `${(parsed.work || []).length} positions, ${(parsed.education || []).length} schools, ${(parsed.projects || []).length} projects, ${(parsed.skills || []).length} skills`;
             note.textContent = `Imported ${counts}. Review them in the next steps.`;
             ctx.save();
           }, { doneText: 'Resume saved.' }),
@@ -51,6 +51,10 @@
     {
       title: 'Education',
       render: (draft) => [h('p.muted', {}, 'Highest or most recent first.'), listForm('education', draft.education)],
+    },
+    {
+      title: 'Projects',
+      render: (draft) => [h('p.muted', {}, 'Optional. Personal, school or open-source projects. These only fill project sections, never work history.'), listForm('projects', draft.projects)],
     },
     {
       title: 'Skills & summary',

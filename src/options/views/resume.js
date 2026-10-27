@@ -79,6 +79,7 @@
         Object.values(parsed.personal || {}).filter(Boolean).length + ' contact fields',
         (parsed.work || []).length + ' positions',
         (parsed.education || []).length + ' schools',
+        (parsed.projects || []).length + ' projects',
         (parsed.skills || []).length + ' skills',
       ].join(', ');
       const save = async () => {
@@ -96,6 +97,8 @@
         listForm('work', draft.work),
         h('h4', {}, 'Education'),
         listForm('education', draft.education),
+        h('h4', {}, 'Projects'),
+        listForm('projects', draft.projects),
         h('h4', {}, 'Skills & summary'),
         skillsForm(draft),
         textForm('Summary', draft, 'summary', undefined, 3),

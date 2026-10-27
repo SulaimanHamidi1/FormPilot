@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Greenhouse (job-boards) education fixture</title>
+</head>
+<body>
+<!-- Education block of job-boards.greenhouse.io (remix UI) as of 2026-10:
+     react-select month dropdowns beside plain year boxes. -->
+<form id="application-form" class="application--form">
+  <div class="education--container">
+    <h3 class="section-header">Education</h3>
+    <div class="education--form">
+      <div class="select"><div class="select__container">
+        <label id="school--0-label" for="school--0" class="label select__label">School<span>*</span></label>
+        <div class="select-shell"><div class="select__control"><div class="select__value-container">
+          <div class="select__input-container"><input id="school--0" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="school--0-label" aria-required="true" autocomplete="off" type="text" value="" data-options="George Mason University|University of California, Berkeley|Stanford University"></div>
+        </div></div></div>
+      </div></div>
+      <div class="select"><div class="select__container">
+        <label id="degree--0-label" for="degree--0" class="label select__label">Degree<span>*</span></label>
+        <div class="select-shell"><div class="select__control"><div class="select__value-container">
+          <div class="select__input-container"><input id="degree--0" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="degree--0-label" aria-required="true" autocomplete="off" type="text" value="" data-options="High School|Associate's Degree|Bachelor's Degree|Master's Degree"></div>
+        </div></div></div>
+      </div></div>
+      <div class="select"><div class="select__container">
+        <label id="discipline--0-label" for="discipline--0" class="label select__label">Discipline<span>*</span></label>
+        <div class="select-shell"><div class="select__control"><div class="select__value-container">
+          <div class="select__input-container"><input id="discipline--0" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="discipline--0-label" aria-required="true" autocomplete="off" type="text" value="" data-options="Biology|Computer Science|Economics"></div>
+        </div></div></div>
+      </div></div>
+      <div class="education--dates">
+        <div class="select"><div class="select__container">
+          <label id="start-month--0-label" for="start-month--0" class="label select__label">Start date month<span>*</span></label>
+          <div class="select-shell"><div class="select__control"><div class="select__value-container">
+            <div class="select__input-container"><input id="start-month--0" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="start-month--0-label" aria-required="true" autocomplete="off" type="text" value="" data-options="months"></div>
+          </div></div></div>
+        </div></div>
+        <div class="field-wrapper"><div class="text-input-wrapper"><div class="input-wrapper">
+          <label id="start-year--0-label" for="start-year--0" class="label">Start date year<span>*</span></label>
+          <input id="start-year--0" class="input input__single-line" aria-required="true" type="number" value="">
+        </div></div></div>
+        <div class="select"><div class="select__container">
+          <label id="end-month--0-label" for="end-month--0" class="label select__label">End date month<span>*</span></label>
+          <div class="select-shell"><div class="select__control"><div class="select__value-container">
+            <div class="select__input-container"><input id="end-month--0" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="end-month--0-label" aria-required="true" autocomplete="off" type="text" value="" data-options="months"></div>
+          </div></div></div>
+        </div></div>
+        <div class="field-wrapper"><div class="text-input-wrapper"><div class="input-wrapper">
+          <label id="end-year--0-label" for="end-year--0" class="label">End date year<span>*</span></label>
+          <input id="end-year--0" class="input input__single-line" aria-required="true" type="number" value="">
+        </div></div></div>
+      </div>
+    </div>
+    <button type="button" class="add-another-button">Add another</button>
+  </div>
+</form>
+<script>
+  // Minimal react-select: opens on click/ArrowDown, filters as you type,
+  // clears the typed text once an option is chosen.
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  for (const input of document.querySelectorAll('input[role=combobox]')) {
+    const all = input.dataset.options === 'months' ? MONTHS : input.dataset.options.split('|');
+    const menu = document.createElement('div');
+    menu.className = 'select__menu';
+    menu.setAttribute('role', 'listbox');
+    menu.id = input.id + '-listbox';
+    menu.hidden = true;
+    input.setAttribute('aria-controls', menu.id);
+    input.closest('.select-shell').append(menu);
+    const render = () => {
+      const q = input.value.trim().toLowerCase();
+      menu.innerHTML = '';
+      for (const name of all.filter((n) => n.toLowerCase().includes(q))) {
+        const o = document.createElement('div');
+        o.className = 'select__option';
+        o.setAttribute('role', 'option');
+        o.textContent = name;
+        o.addEventListener('click', () => {
+          input.dataset.selected = name;
+          input.value = '';
+          menu.hidden = true;
+        });
+        menu.append(o);
+      }
+      menu.hidden = !menu.children.length;
+    };
+    input.addEventListener('click', render);
+    input.addEventListener('input', render);
+    input.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') render(); if (e.key === 'Escape') menu.hidden = true; });
+  }
+</script>
+</body>
+</html>

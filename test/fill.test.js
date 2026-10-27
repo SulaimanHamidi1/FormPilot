@@ -52,6 +52,30 @@ test('does not overwrite values the user already typed', async () => {
   assert.ok(res.kept >= 1);
 });
 
+test('the Stop button halts filling after the current field', async () => {
+  const w = loadPage('test/pages/forms/generic.html', { scripts: [] });
+  w.chrome = createChromeMock();
+  const fs = require('fs');
+  const path = require('path');
+  for (const s of [...CONTENT, 'src/shared/storage.js', 'src/content/main.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', s), 'utf8'));
+  await w.chrome.storage.local.set({ profile: rawProfile });
+  const stopBar = () => w.JF.ui.wrap().querySelector('.stopbar');
+  // Press Stop as soon as the first field is filled.
+  w.document.querySelector('#fn').addEventListener('input', () => stopBar().querySelector('button').click(), { once: true });
+  const res = await w.JF.run();
+  assert.strictEqual(res.stopped, true);
+  assert.strictEqual(w.document.querySelector('#fn').value, 'Jane');
+  assert.strictEqual(w.document.querySelector('input[name=email]').value, '', 'nothing after Stop is filled');
+  assert.strictEqual(res.filled, 1);
+  w.JF.showSummary(res);
+  assert.strictEqual(stopBar(), null, 'summary hides the Stop bar');
+  assert.match(w.JF.ui.wrap().textContent, /Stopped after filling 1 field/);
+  // A later run starts fresh.
+  const again = await w.JF.run();
+  assert.strictEqual(again.stopped, false);
+  assert.strictEqual(w.document.querySelector('input[name=email]').value, 'jane.doe@example.com');
+});
+
 test('date formatting follows the field', () => {
   const w = loadPage('test/pages/forms/generic.html');
   const { formatDate } = w.JF.fill;

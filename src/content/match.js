@@ -9,6 +9,7 @@
   const THRESHOLD = 0.55;
   const CUSTOM_THRESHOLD = 0.72;
   const compact = (s) => s.replace(/ /g, '');
+  const LIST_NAMES = Object.keys(JF.schema.LISTS);
 
   // Pre-normalise rule phrases once.
   const PREPARED = RULES.map((r) => ({
@@ -49,7 +50,7 @@
     'authorization.workAuthStatus', 'preferences.willingToRelocate', 'preferences.previouslyEmployed', 'preferences.remotePreference', 'work.current',
   ]);
   // Free-text boxes only take long-form answers.
-  const TEXTAREA_KEYS = new Set(['summary', 'coverLetter', 'skills', 'work.description', 'personal.address1']);
+  const TEXTAREA_KEYS = new Set(['summary', 'coverLetter', 'skills', 'work.description', 'projects.description', 'personal.address1']);
 
   // Normalised text signals for a field, strongest first.
   function signals(field) {
@@ -71,8 +72,10 @@
     if (!rule.kinds && field.kind === 'file') return 0;
     const listName = rule.key.split('.')[0];
     if ((rule.listOnly || rule.section) && field.section !== (rule.section || listName)) return 0;
-    // Work fields inside an education block (and vice versa) don't apply.
-    if ((listName === 'work' && field.section === 'education') || (listName === 'education' && field.section === 'work')) return 0;
+    // List fields only apply in their own list's block (no job title in an
+    // education block), and a project block only takes project fields.
+    if (LIST_NAMES.includes(listName) && field.section && field.section !== listName) return 0;
+    if (field.section === 'projects' && listName !== 'projects') return 0;
     const all = [sig.label, sig.nearby, sig.placeholder, sig.attrs];
     for (const n of rule.not) if (all.some((t) => t && containsPhrase(t, n))) return 0;
     if (field.autocomplete && rule.autocomplete && rule.autocomplete.some((a) => field.autocomplete.split(' ').includes(a))) return 1;
@@ -144,7 +147,7 @@
       default:
         break;
     }
-    if (section === 'work' || section === 'education') {
+    if (LIST_NAMES.includes(section)) {
       const item = p[section][index];
       if (!item) return '';
       return field === 'current' ? item.current : item[field] || '';
@@ -176,11 +179,13 @@
       if (!rule) return { field };
       let index = 0;
       const listName = rule.key.split('.')[0];
-      if ((listName === 'work' || listName === 'education') && field.section === listName) {
+      if (LIST_NAMES.includes(listName) && field.section === listName) {
         if (field.index != null) index = field.index - (minIndex[listName] >= 1 ? minIndex[listName] : 0);
         else {
-          index = occurrences[rule.key] || 0;
-          occurrences[rule.key] = index + 1;
+          // A split date (month + year) is one occurrence, counted per part.
+          const slot = field.datePart ? rule.key + ':' + field.datePart : rule.key;
+          index = occurrences[slot] || 0;
+          occurrences[slot] = index + 1;
         }
       }
       const value = valueFor(rule.key, profile, index);

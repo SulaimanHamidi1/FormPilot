@@ -16,7 +16,8 @@
     experience: /^((work|professional|relevant|employment|career)\s+)?(experience|history|employment)(\s+history)?$/,
     education: /^(education|academic\s+background|education\s*(&|and)\s*training|academics)$/,
     skills: /^((technical|core|key)\s+)?(skills|competencies|technologies|tech\s+stack|tools)(\s*(&|and)\s*(tools|technologies|expertise|interests))?$/,
-    other: /^(projects?|personal\s+projects|certifications?|licenses|awards|honors|publications|volunteer(ing)?(\s+experience)?|languages|interests|hobbies|references|activities|leadership|achievements|courses|coursework)$/,
+    projects: /^((personal|academic|selected|relevant|key|side|technical|notable|software|research|independent|open\s+source)\s+)?projects?(\s+(experience|work|highlights))?$/,
+    other: /^(certifications?|licenses|awards|honors|publications|volunteer(ing)?(\s+experience)?|languages|interests|hobbies|references|activities|leadership|achievements|courses|coursework)$/,
   };
 
   const TITLE_WORDS = /\b(engineer|developer|manager|analyst|designer|intern|lead|director|consultant|scientist|specialist|associate|coordinator|architect|administrator|officer|assistant|vp|head|president|founder|co-founder|programmer|technician|researcher|teacher|instructor|representative|accountant|editor|writer|strategist|owner|partner|advisor|fellow|sre|devops|cto|ceo|cfo|staff|principal|senior|junior|sr\.?|jr\.?)\b/i;
@@ -204,6 +205,59 @@
     return entries;
   }
 
+  // Lowercase only, so "ASP.NET" isn't a link; ".io" needs a path ("socket.io").
+  const PROJECT_URL_RE = /(?:https?:\/\/|www\.)[^\s,;|()<>]+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|dev|net|org|me|site|app|xyz|tech|io(?=\/))(?:\/[^\s,;|()<>]*)?(?=[\s,;|)]|$)/;
+
+  // A plain line starts a project ("Name | Role | link | dates"); more plain
+  // lines before its bullets add to its header (often the tech stack).
+  function parseProjects(lines) {
+    const entries = [];
+    let entry = null;
+    let body = false; // bullets seen for the current project
+    for (const raw of lines) {
+      const line = clean(raw);
+      if (!line) continue;
+      const isBullet = BULLET_RE.test(raw);
+      if (isBullet || (entry && line.length > 90)) {
+        if (entry) entry.description += (entry.description ? '\n' : '') + (isBullet ? '• ' + line.replace(BULLET_RE, '') : line);
+        body = true;
+        continue;
+      }
+      if (!entry || body) {
+        entry = { name: '', role: '', url: '', startDate: '', endDate: '', description: '' };
+        entries.push(entry);
+        body = false;
+      }
+      projectHeader(entry, line);
+    }
+    return entries.filter((e) => e.name);
+  }
+
+  function projectHeader(entry, line) {
+    let rest = line;
+    const range = rest.match(RANGE_RE);
+    if (range) {
+      if (!entry.startDate) {
+        const end = normDate(range[2]);
+        entry.startDate = toMonth(normDate(range[1]), false);
+        entry.endDate = end === 'present' ? '' : toMonth(end, true);
+      }
+      rest = rest.replace(range[0], ' ');
+    }
+    const url = rest.match(PROJECT_URL_RE);
+    if (url) {
+      if (!entry.url) entry.url = withScheme(url[0].replace(/[.)]+$/, ''));
+      rest = rest.replace(url[0], ' ');
+    }
+    // Removing the dates and link can leave stray separators ("Name |  | ").
+    const pieces = headerPieces(clean(rest.replace(/\(\s*\)/g, ''))).map((p) => p.replace(/^[|•·,–—-]+\s*|\s*[|•·,(–—-]+$/g, '')).filter(Boolean);
+    for (const p of pieces) {
+      if (!entry.name) entry.name = p;
+      else if (!entry.role && TITLE_WORDS.test(p) && p.split(' ').length <= 5) entry.role = p;
+      else entry.description += (entry.description ? '\n' : '') + p;
+    }
+  }
+
   function parseEducation(lines) {
     const entries = [];
     let cur = null;
@@ -303,9 +357,10 @@
     const personal = { ...findName(header), ...findLocation(header), ...findContacts(text) };
     const work = parseExperience(sections.experience || []);
     const education = parseEducation(sections.education || []);
+    const projects = parseProjects(sections.projects || []);
     const skills = parseSkills(sections.skills || []);
     const summary = (sections.summary || []).map(clean).join(' ');
-    const result = { personal, work, education, skills, summary };
+    const result = { personal, work, education, projects, skills, summary };
     const years = yearsOfExperience(work);
     if (years) result.preferences = { yearsExperience: years };
     if (work[0] && work[0].title) result.preferences = { ...(result.preferences || {}), desiredTitle: work[0].title };
@@ -320,7 +375,7 @@
         if (v && (overwrite || !p[section][k])) p[section][k] = v;
       }
     }
-    for (const list of ['work', 'education']) {
+    for (const list of ['work', 'education', 'projects']) {
       const items = parsed[list] || [];
       if (items.length && (overwrite || !p[list].length)) p[list] = items;
     }

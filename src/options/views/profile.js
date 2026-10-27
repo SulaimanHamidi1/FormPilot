@@ -24,6 +24,7 @@
       s('personal'),
       card('Work history', listForm('work', profile.work, changed)),
       card('Education', listForm('education', profile.education, changed)),
+      card('Projects', listForm('projects', profile.projects, changed)),
       card('Skills & summary',
         skillsForm(profile, changed),
         textForm('Professional summary', profile, 'summary', changed, 4),

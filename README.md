@@ -6,7 +6,7 @@ profile you set up once. Everything stays on your device in
 
 - Imports your resume (PDF, DOCX or TXT), parsed locally, to pre-fill your profile
 - Walks you through the questions applications ask: work history, education,
-  work authorization, sponsorship, salary, notice period, relocation, EEO answers
+  projects, work authorization, sponsorship, salary, notice period, relocation, EEO answers
 - Fills text fields, dropdowns (native and custom, e.g. react-select and Workday),
   radios, checkboxes, Yes/No toggle buttons, dates and resume uploads, firing the
   events React, Vue and Angular forms need
@@ -143,7 +143,7 @@ src/content/             content scripts (injected only when you fill)
   detect.js              single-pass field detection (labels, groups, shadow DOM, sections)
   match.js               scoring, saved-answer fuzzy matching, option picking
   fill.js                framework-safe value setting, dropdowns, uploads, highlighting
-  expand.js              clicks "Add" in empty work/education sections
+  expand.js              clicks "Add" in empty work/education/project sections
   ui.js, prompt.js       on-page toast and unknown-question panel (isolated shadow root)
   main.js                entry point, multi-step watcher
   launcher.js            optional on-page logo button (the only script that runs on its own)

@@ -108,3 +108,22 @@ test('custom answers match reworded questions but not unrelated ones', () => {
   assert.ok(customScore('What is your favorite color?', 'Why do you want to work at Acme?') < 0.5);
   assert.ok(customScore('Are you willing to travel?', 'Are you willing to relocate?') < 0.72);
 });
+
+test('projects fill from projects, not work history', () => {
+  const { by } = run('test/pages/forms/projects.html');
+  expectKeys(by, {
+    '#w-title': ['work.title', 'Senior Software Engineer'],
+    '#w-company': ['work.company', 'Stripe'],
+    '#w-desc': ['work.description', 'Ledger services.'],
+    '#p0-title': ['projects.name', 'FormPilot'],
+    '#p0-role': ['projects.role', 'Creator'],
+    '#p0-url': ['projects.url', 'https://github.com/janedoe/FormPilot'],
+    '#p0-desc': ['projects.description', 'Chrome extension that fills job applications.'],
+    '#p1-title': ['projects.name', 'Ledger Viz'],
+    '#p1-desc': ['projects.description', 'Visualizes double-entry ledgers.'],
+  });
+  // Numbered project blocks (project-2) are projects too; work keys never apply there.
+  assert.strictEqual(by('#p2-name').field.section, 'projects');
+  assert.strictEqual(by('#p2-name').key, 'projects.name');
+  assert.ok(!by('#p2-company').key, 'company in a project block should not fill from work');
+});

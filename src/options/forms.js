@@ -64,7 +64,7 @@
     return h('div.section-form', {}, section.note ? h('p.muted', {}, section.note) : null, grid);
   }
 
-  // Editable list of work/education entries. `items` is mutated in place.
+  // Editable list of work/education/project entries. `items` is mutated in place.
   function listForm(listName, items, onChange = () => {}) {
     const def = JF.schema.LISTS[listName];
     const root = h('div.list-form');
@@ -78,7 +78,7 @@
             onChange();
           }));
         }
-        const title = [item.title || item.degree, item.company || item.school].filter(Boolean).join(' · ');
+        const title = [item.title || item.degree || item.name, item.company || item.school || item.role].filter(Boolean).join(' · ');
         root.append(
           h('div.card.list-item', {},
             h('div.list-item-head', {},

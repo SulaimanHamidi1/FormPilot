@@ -1,6 +1,6 @@
 // Repeating sections (Workday and others) can start with only an "Add"
-// button. Click it until there is a block for each saved job and school, so
-// the normal fill can fill them. Exposes JF.expand.
+// button. Click it until there is a block for each saved job, school and
+// project, so the normal fill can fill them. Exposes JF.expand.
 (() => {
   const JF = (globalThis.JF = globalThis.JF || {});
   if (JF.expand) return;
@@ -11,11 +11,13 @@
   const SECTION_WORDS = {
     work: /\b(work|professional|employment|job)\s*(experience|history)\b|^(work\s+)?experience$|\bemployment\b/i,
     education: /\beducation\b|\bschools?\b/i,
+    projects: /\bprojects?\b(?!\s+manag)/i,
   };
   // Profile entries worth a block of their own.
   const WANTED = {
     work: (w) => w.company || w.title,
     education: (e) => e.school || e.degree,
+    projects: (p) => p.name,
   };
   const HEADING = 'h1, h2, h3, h4, h5, h6, legend, [role=heading]';
 
@@ -25,6 +27,7 @@
   function sectionFromText(t) {
     if (!t || t.length > 80) return null;
     if (SECTION_WORDS.education.test(t)) return 'education';
+    if (SECTION_WORDS.projects.test(t)) return 'projects';
     if (SECTION_WORDS.work.test(t)) return 'work';
     return null;
   }
@@ -74,9 +77,9 @@
     return n;
   }
 
-  async function waitFor(test, ms) {
+  async function waitFor(test, ms, shouldStop) {
     const end = performance.now() + ms;
-    while (performance.now() < end) {
+    while (performance.now() < end && !shouldStop()) {
       await sleep(100);
       if (test()) return true;
     }
@@ -84,19 +87,20 @@
   }
 
   // Returns the number of blocks added.
-  async function run(profile, { follow = false } = {}) {
+  async function run(profile, { follow = false, shouldStop = () => false } = {}) {
     let added = 0;
-    for (const list of ['work', 'education']) {
+    for (const list of ['work', 'education', 'projects']) {
       const wanted = Math.min(profile[list].filter(WANTED[list]).length, MAX);
-      for (let i = 0; i < MAX; i++) {
+      for (let i = 0; i < MAX && !shouldStop(); i++) {
         const before = blocksOf(list, profile);
         if (before >= wanted) break;
         const btn = addButtons().find((b) => sectionOfButton(b) === list);
         if (!btn) break;
         if (follow) await JF.fill.follow(btn);
+        if (shouldStop()) break;
         JF.fill.click(btn);
         // Stop if the site doesn't add a block (e.g. a limit was reached).
-        if (!(await waitFor(() => blocksOf(list, profile) > before, 2500))) break;
+        if (!(await waitFor(() => blocksOf(list, profile) > before, 2500, shouldStop))) break;
         added++;
       }
     }

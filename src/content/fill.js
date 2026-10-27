@@ -8,6 +8,7 @@
   const OK_COLOR = '#16a34a';
   const WARN_COLOR = '#d97706';
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   // ---- Following along ----
 
@@ -154,9 +155,13 @@
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     let v = String(value);
     if (field.datePart) {
-      const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(v);
+      const m = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?/.exec(v);
       if (!m) return '';
-      return field.datePart === 'year' ? m[1] : field.datePart === 'month' ? m[2] : m[3] || '01';
+      if (field.datePart === 'year') return m[1];
+      if (!m[2]) return '';
+      if (field.datePart === 'day') return m[3] || '01';
+      // Month dropdowns list names; typing "01" into one finds nothing.
+      return field.kind === 'text' ? m[2] : MONTHS[Number(m[2]) - 1] || '';
     }
     const el = field.el;
     const type = (el.getAttribute('type') || '').toLowerCase();
@@ -171,6 +176,25 @@
     return v;
   }
 
+  // Option for one part of a date ("January", "Jan", "01", "2024").
+  function pickDatePart(options, value, field) {
+    const part = formatValue(value, { ...field, kind: 'text' });
+    if (!part) return null;
+    const n = Number(part);
+    const name = field.datePart === 'month' ? MONTHS[n - 1].toLowerCase() : '';
+    return (
+      options.find((o) => {
+        const t = JF.text.normalize(o.text || o.value);
+        if (/^\d+$/.test(t)) return Number(t) === n;
+        return !!name && (t === name || (t.length >= 3 && name.startsWith(t)) || t.split(' ').includes(name));
+      }) || null
+    );
+  }
+
+  function pick(field, options, value) {
+    return field.datePart ? pickDatePart(options, value, field) : JF.match.pickOption(options, value);
+  }
+
   // ---- Per-kind fillers. Each returns true when the field was filled. ----
 
   function fillText(field, value) {
@@ -181,7 +205,7 @@
   }
 
   function fillSelect(field, value) {
-    const opt = JF.match.pickOption(field.options, value);
+    const opt = pick(field, field.options, value);
     if (!opt) return false;
     const el = field.el;
     if (el.value !== opt.value) {
@@ -350,7 +374,7 @@
       clickEl(el);
       opts = await waitForOptions(el, 400);
     }
-    let opt = JF.match.pickOption(opts, value);
+    let opt = pick(field, opts, value);
     if (!opt) {
       // Type to search; long canonical answers search better by first words.
       const query = /\s/.test(v) && v.length > 24 ? v.split(/\s+/).slice(0, 3).join(' ') : v;
@@ -362,7 +386,7 @@
         fire(el, 'keydown', { key: 'Enter', code: 'Enter', keyCode: 13 });
         opts = await waitForOptions(el, 1500);
       }
-      opt = JF.match.pickOption(opts, value);
+      opt = pick(field, opts, value);
     }
     if (opt) {
       clickEl(opt.el);
@@ -409,10 +433,10 @@
   async function fillListbox(field, value) {
     const el = field.el;
     const current = JF.detect.textOf(el);
-    if (current && JF.match.pickOption([{ text: current, value: '' }], value)) return true;
+    if (current && pick(field, [{ text: current, value: '' }], value)) return true;
     clickEl(el);
     const opts = await waitForOptions(el, 1200);
-    const opt = JF.match.pickOption(opts, value);
+    const opt = pick(field, opts, value);
     if (opt) {
       clickEl(opt.el);
       await sleep(80);
@@ -500,6 +524,7 @@
   async function fillAll(matches, ctx) {
     const result = { filled: [], kept: [], failed: [], empty: [] };
     for (const m of matches) {
+      if (ctx.shouldStop && ctx.shouldStop()) break;
       if (m.skip || (!m.key && !m.custom)) continue;
       const status = await fillOne(m, ctx);
       result[status].push(m);

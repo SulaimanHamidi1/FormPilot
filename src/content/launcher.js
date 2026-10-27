@@ -1,12 +1,15 @@
-// Floating FormPilot button on the right edge of pages that look like a job
+// Floating FormPilot button on the edge of pages that look like a job
 // application. Registered by the service worker only when the user turns it on
 // in Settings. It is small and standalone: the filler itself is still injected
-// only when the button (or the popup/shortcut) is used.
+// only when the button (or the popup/shortcut) is used. While a fill runs it
+// turns into a Stop button. It can be dragged up and down either edge.
 (() => {
   if (globalThis.JFLauncher) return;
 
   const HOST_ATTR = 'data-jf-ui';
   const HIDDEN_KEY = 'launcherHidden';
+  const POS_KEY = 'launcherPos';
+  const DRAG_PX = 6;
   const CHECK_DELAY = 1000;
   const WATCH_FOR = 3 * 60 * 1000;
 
@@ -63,30 +66,53 @@
   const STYLE = `
     :host { all: initial; }
     .tab {
-      position: fixed; top: 50%; right: 0; z-index: 2147483646;
+      /* --y is the dragged height; the clamp keeps the button on screen. */
+      position: fixed; top: clamp(48px, var(--y, 50%), calc(100% - 48px)); right: 0; z-index: 2147483646;
       transform: translate(10px, -50%); transition: transform .15s ease;
       display: flex; flex-direction: column; align-items: center; gap: 2px;
       font: 12px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    .tab:hover, .tab:focus-within { transform: translate(0, -50%); }
+    .tab.left { right: auto; left: 0; transform: translate(-10px, -50%); }
+    .tab:hover, .tab:focus-within, .tab.filling, .tab.dragging { transform: translate(0, -50%); }
+    .tab.dragging { transition: none; }
     .go {
-      all: unset; cursor: pointer; display: block; width: 44px; height: 44px; padding: 4px 14px 4px 4px;
+      all: unset; cursor: grab; touch-action: none; position: relative; display: block;
+      width: 44px; height: 44px; padding: 4px 14px 4px 4px;
       background: #fff; border-radius: 14px 0 0 14px; box-shadow: -2px 2px 12px rgb(0 0 0 / .22);
     }
+    .tab.left .go { padding: 4px 4px 4px 14px; border-radius: 0 14px 14px 0; box-shadow: 2px 2px 12px rgb(0 0 0 / .22); }
+    .tab.dragging .go { cursor: grabbing; }
     .go svg { width: 44px; height: 44px; display: block; }
     .go:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-    .go.busy svg { animation: pulse .8s ease-in-out infinite alternate; }
+    .go.busy svg, .tab.filling .go svg { animation: pulse .8s ease-in-out infinite alternate; }
     @keyframes pulse { to { opacity: .45; } }
+    .stopmark {
+      display: none; position: absolute; top: 50%; left: 26px; transform: translate(-50%, -50%);
+      width: 26px; height: 26px; border-radius: 50%; background: #dc2626; box-shadow: 0 1px 4px rgb(0 0 0 / .35);
+    }
+    .tab.left .stopmark { left: 36px; }
+    .stopmark::after { content: ""; position: absolute; inset: 8px; border-radius: 2px; background: #fff; }
+    .tab.filling .stopmark { display: block; }
+    .tab.stopping .stopmark { background: #6b7280; }
     .hide {
       all: unset; cursor: pointer; visibility: hidden; margin-right: 10px;
       width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px;
       background: #1f2328; color: #fff; font-size: 13px;
     }
+    .tab.left .hide { margin-right: 0; margin-left: 10px; }
     .tab:hover .hide, .hide:focus-visible { visibility: visible; }
+    .tab.filling .hide, .tab.dragging .hide { visibility: hidden; }
     @media (prefers-color-scheme: dark) { .go { background: #1d2127; } }
+    @media (prefers-reduced-motion: reduce) { .tab { transition: none; } .go svg { animation: none !important; } }
   `;
 
+  const GO_TITLE = 'Fill this application (FormPilot). Drag to move.';
+  const GO_LABEL = 'Fill this application with FormPilot';
+  const STOP_TITLE = 'Stop filling (FormPilot)';
+
   let host = null;
+  let tab = null;
+  let go = null;
 
   function show() {
     if (host && host.isConnected) return;
@@ -95,16 +121,103 @@
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${STYLE}</style><div class="tab">`
       + '<button class="hide" title="Don\'t show on this site" aria-label="Don\'t show the FormPilot button on this site">×</button>'
-      + `<button class="go" title="Fill this application (FormPilot)" aria-label="Fill this application with FormPilot">${LOGO}</button></div>`;
-    const go = root.querySelector('.go');
-    go.addEventListener('click', () => fill(go));
+      + `<button class="go" title="${GO_TITLE}" aria-label="${GO_LABEL}">${LOGO}<span class="stopmark"></span></button></div>`;
+    tab = root.querySelector('.tab');
+    go = root.querySelector('.go');
+    draggable(tab, go, () => (tab.classList.contains('filling') ? stopFill() : fill(go)));
     root.querySelector('.hide').addEventListener('click', hideOnSite);
     document.documentElement.append(host);
+    loadPos();
   }
 
   function remove() {
     if (host) host.remove();
-    host = null;
+    host = tab = go = null;
+  }
+
+  // ---- Position: either edge, any height; saved for all sites ----
+
+  function place(side, y) {
+    tab.classList.toggle('left', side === 'left');
+    tab.style.setProperty('--y', (y * 100).toFixed(2) + '%');
+  }
+
+  async function loadPos() {
+    try {
+      const { [POS_KEY]: pos } = await chrome.storage.local.get(POS_KEY);
+      if (pos && tab) place(pos.side, pos.y);
+    } catch {}
+  }
+
+  function savePos(side, y) {
+    try {
+      chrome.storage.local.set({ [POS_KEY]: { side, y } }).catch(() => {});
+    } catch {}
+  }
+
+  // A press that moves more than a few pixels drags the button; dropping it
+  // on the left half of the window docks it to the left edge. A press that
+  // doesn't move is a click.
+  function draggable(tab, btn, onClick) {
+    let start = null;
+    let dragged = false;
+    let pos = null;
+    btn.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      start = { x: e.clientX, y: e.clientY };
+      dragged = false;
+      try { btn.setPointerCapture(e.pointerId); } catch {}
+    });
+    btn.addEventListener('pointermove', (e) => {
+      if (!start) return;
+      if (!dragged && Math.hypot(e.clientX - start.x, e.clientY - start.y) < DRAG_PX) return;
+      dragged = true;
+      tab.classList.add('dragging');
+      pos = { side: e.clientX < innerWidth / 2 ? 'left' : 'right', y: Math.min(1, Math.max(0, e.clientY / innerHeight)) };
+      place(pos.side, pos.y);
+    });
+    const end = () => {
+      if (!start) return;
+      start = null;
+      tab.classList.remove('dragging');
+      if (dragged && pos) savePos(pos.side, pos.y);
+    };
+    btn.addEventListener('pointerup', end);
+    btn.addEventListener('pointercancel', end);
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // The click that ends a drag isn't a press of the button.
+      if (dragged) {
+        dragged = false;
+        return;
+      }
+      onClick();
+    });
+  }
+
+  // ---- Fill / Stop ----
+
+  // Called by the filler (JF.ui.showStop/hideStop in the same isolated world).
+  // Returns whether the button is on the page to show the Stop control.
+  function setFilling(on) {
+    if (!host || !host.isConnected) return false;
+    tab.classList.toggle('filling', on);
+    tab.classList.remove('stopping');
+    go.classList.remove('busy');
+    go.title = on ? STOP_TITLE : GO_TITLE;
+    go.setAttribute('aria-label', on ? 'Stop filling this application' : GO_LABEL);
+    return true;
+  }
+
+  function stopFill() {
+    if (tab.classList.contains('stopping')) return;
+    tab.classList.add('stopping');
+    go.title = 'Stopping…';
+    const JF = globalThis.JF;
+    if (JF && JF.stop) JF.stop();
+    try {
+      if (chrome.runtime && chrome.runtime.id) chrome.runtime.sendMessage({ type: 'stop' }).catch(() => {});
+    } catch {}
   }
 
   async function fill(btn) {
@@ -165,6 +278,6 @@
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  globalThis.JFLauncher = { looksLikeApplication, show, remove };
+  globalThis.JFLauncher = { looksLikeApplication, show, remove, setFilling };
   if (!globalThis.JF_LAUNCHER_MANUAL) start();
 })();

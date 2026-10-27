@@ -83,8 +83,10 @@
 
   // "Filling..." bar with a Stop button, shown in the top frame while a fill
   // runs. Stop halts this frame at once and asks the service worker to stop
-  // every other frame of the tab.
+  // every other frame of the tab. When the on-page FormPilot button is showing,
+  // it becomes the Stop button instead.
   function showStop() {
+    if (globalThis.JFLauncher && globalThis.JFLauncher.setFilling(true)) return;
     const w = wrap();
     if (w.querySelector('.stopbar')) return;
     const btn = el('button', {
@@ -106,6 +108,7 @@
   }
 
   function hideStop() {
+    if (globalThis.JFLauncher) globalThis.JFLauncher.setFilling(false);
     if (host && host.isConnected) root.querySelectorAll('.stopbar').forEach((s) => s.remove());
   }
 

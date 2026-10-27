@@ -56,3 +56,60 @@ test('launcher shows a single button that the filler skips', () => {
   L.remove();
   assert.strictEqual(w.document.querySelectorAll('[data-jf-ui]').length, 0);
 });
+
+function filledLauncher() {
+  const { CONTENT } = require('./helpers/dom');
+  const { createChromeMock } = require('./helpers/chrome-mock');
+  const w = loadPage('test/pages/forms/generic.html', { scripts: [] });
+  w.chrome = createChromeMock();
+  w.chrome.runtime = { id: 'test', sendMessage: async () => ({ ok: true }) };
+  for (const s of [...CONTENT, 'src/shared/storage.js', 'src/content/main.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', s), 'utf8'));
+  const L = launcherIn(w);
+  L.show();
+  const root = w.document.querySelector('[data-jf-ui]').shadowRoot;
+  return { w, L, tab: root.querySelector('.tab'), go: root.querySelector('.go') };
+}
+
+test('launcher turns into the Stop button while filling', async () => {
+  const { w, tab, go } = filledLauncher();
+  await w.chrome.storage.local.set({ profile: require('./fixtures/profile.json') });
+  const sent = [];
+  w.chrome.runtime.sendMessage = async (msg) => { sent.push(msg.type); return { ok: true }; };
+  let wasFilling = false;
+  w.document.querySelector('#fn').addEventListener('input', () => {
+    wasFilling = tab.classList.contains('filling');
+    go.click();
+  }, { once: true });
+  const res = await w.JF.run();
+  assert.ok(wasFilling, 'icon shows Stop during the fill');
+  assert.strictEqual(w.JF.ui.wrap().querySelector('.stopbar'), null, 'no separate Stop bar');
+  assert.strictEqual(res.stopped, true);
+  assert.deepStrictEqual(sent, ['stop'], 'clicking while filling stops instead of filling again');
+  assert.strictEqual(w.document.querySelector('input[name=email]').value, '');
+  w.JF.showSummary(res);
+  assert.ok(!tab.classList.contains('filling'));
+  assert.match(go.title, /Fill this application/);
+});
+
+test('launcher can be dragged to the left edge and remembers it', async () => {
+  const { w, tab, go } = filledLauncher();
+  const sent = [];
+  w.chrome.runtime.sendMessage = async (msg) => { sent.push(msg.type); return { ok: true }; };
+  const ev = (type, x, y) => go.dispatchEvent(new w.PointerEvent(type, { bubbles: true, button: 0, clientX: x, clientY: y, pointerId: 1 }));
+  ev('pointerdown', 1000, 380);
+  ev('pointermove', 600, 300);
+  ev('pointermove', 50, 192);
+  assert.ok(tab.classList.contains('dragging'));
+  ev('pointerup', 50, 192);
+  go.click();
+  assert.ok(tab.classList.contains('left'));
+  assert.strictEqual(tab.style.getPropertyValue('--y'), '25.00%');
+  assert.deepStrictEqual(sent, [], 'a drag is not a click');
+  const { launcherPos } = await w.chrome.storage.local.get('launcherPos');
+  assert.deepStrictEqual(launcherPos, { side: 'left', y: 0.25 });
+  // A plain click still fills.
+  ev('pointerdown', 10, 192);
+  ev('pointerup', 10, 192);
+  go.click();
+  assert.deepStrictEqual(sent, ['fill']);
+});

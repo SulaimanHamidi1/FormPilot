@@ -45,7 +45,10 @@ extension's card in `chrome://extensions`.
 
 Turn on **Settings & backup → On-page button** to show the FormPilot logo on the
 right edge of pages that look like a job application. Click it to fill the
-form; hover and click **×** to stop showing it on that site. Choose **On job
+form; while it fills, it shows a red stop mark, and clicking it again stops
+filling. Drag it up or down, or over to the left edge; the spot is remembered.
+Hover and click **×** to stop showing it on that site. Without the button, a
+**Stop** bar appears at the bottom right while filling. Choose **On job
 application sites** (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, iCIMS
 and similar) or **On any site with an application form**; Chrome asks for access
 to those sites when you turn it on. The button script is about 8 KB and only
